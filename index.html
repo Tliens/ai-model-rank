@@ -8,7 +8,7 @@
 <link rel="canonical" href="https://tliens.github.io/ai-model-rank/">
 <link rel="alternate" hreflang="zh" href="https://tliens.github.io/ai-model-rank/">
 <link rel="alternate" hreflang="en" href="https://tliens.github.io/ai-model-rank/?lang=en">
-<link rel="alternate" hreflang="x-default" href="https://tliens.github.io/ai-model-rank/">
+<link rel="alternate" hreflang="x-default" href="https://tliens.github.io/ai-model-rank/?lang=en">
 <meta property="og:type" content="website">
 <meta property="og:title" content="AI 大模型排行榜 - 实时对比 Arena 评分、价格与上下文窗口">
 <meta property="og:description" content="基于 LMArena 实时评分的大模型排行榜，多维对比智能、价格、上下文与多模态能力，支持中英文。">
@@ -891,13 +891,37 @@ async function boot(){
 }
 /* ===== 事件绑定 ===== */
 initTheme();
-(() => {
-  const url = new URL(location.href);
-  const qp = url.searchParams.get('lang');
+function langFromUrlOrStore(){
+  const qp = new URL(location.href).searchParams.get('lang');
+  if (qp) return qp === 'en' ? 'en' : 'zh';
   const saved = store.get('airankLang');
-  const browser = (navigator.language || 'zh').toLowerCase().startsWith('zh') ? 'zh' : 'en';
-  LANG = qp ? (qp === 'en' ? 'en' : 'zh') : (saved || browser);
-})();
+  if (saved === 'en' || saved === 'zh') return saved;
+  return null;
+}
+function heuristicLang(){
+  // IP 判定完成前的即时猜测：中文浏览器或中国时区 → 中文
+  const zhBrowser = (navigator.language || '').toLowerCase().startsWith('zh');
+  let tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(e){}
+  const tzCN = tz === 'Asia/Shanghai' || tz === 'Asia/Urumqi';
+  return (zhBrowser || tzCN) ? 'zh' : 'en';
+}
+// 中国大陆 IP → 中文；其他 → 默认英文。免费无密钥接口三级回退。
+async function detectChinaIP(){
+  const tryJson = async (url, pick) => {
+    try {
+      const res = await fetchTimeout(url, 2500);
+      if (!res.ok) return null;
+      const d = await res.json();
+      const c = pick(d);
+      return (typeof c === 'string' && c) ? c.toUpperCase() : null;
+    } catch(e){ return null; }
+  };
+  let c = await tryJson('https://ipwho.is/', d => d.country_code);
+  if (!c) c = await tryJson('https://get.geojs.io/v1/ip/country.json', d => d.country);
+  if (!c) c = await tryJson('https://api.country.is/', d => d.country);
+  return c === 'CN';
+}
 $('btnLang').onclick = () => applyLang(LANG === 'zh' ? 'en' : 'zh', true);
 $('btnTheme').onclick = () => {
   const dark = document.documentElement.dataset.theme === 'dark';
@@ -930,9 +954,18 @@ $('btnMore').onclick = () => { state.limit = Infinity; renderTable(); };
 $('cmpgo').onclick = openCompare;
 $('modalClose').onclick = () => $('modal').classList.remove('show');
 $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('show'); });
+const explicitLang = langFromUrlOrStore();
+LANG = explicitLang || heuristicLang();
 applyLang(LANG, false);
-window.__airank = { state, renderTable, filtered };  // debug hook
+window.__airank = { state, renderTable, filtered, detectChinaIP };  // debug hook
 boot();
+// 无显式语言选择时按 IP 精判：中国大陆 → 中文，其他 → 英文（不写入 localStorage，每次访问重新判定）
+if (!explicitLang){
+  detectChinaIP().then(isCN => {
+    const want = isCN ? 'zh' : 'en';
+    if (want !== LANG && !langFromUrlOrStore()) applyLang(want, false);
+  });
+}
 </script>
 </body>
 </html>
