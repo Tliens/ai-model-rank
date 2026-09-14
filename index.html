@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 大模型排行榜 - 实时对比 Arena 评分、价格与上下文窗口 | AI Rank</title>
+<meta name="description" content="免费、实时更新的 AI 大模型排行榜：基于 LMArena 人类偏好评分，对比 GPT、Claude、Gemini、DeepSeek、Qwen、GLM、Kimi 等主流大模型的智能评分、API 价格、上下文窗口与多模态能力，支持多维排行与模型对比。">
+<link rel="canonical" href="https://tliens.github.io/ai-model-rank/">
+<link rel="alternate" hreflang="zh" href="https://tliens.github.io/ai-model-rank/">
+<link rel="alternate" hreflang="en" href="https://tliens.github.io/ai-model-rank/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://tliens.github.io/ai-model-rank/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI 大模型排行榜 - 实时对比 Arena 评分、价格与上下文窗口">
+<meta property="og:description" content="基于 LMArena 实时评分的大模型排行榜，多维对比智能、价格、上下文与多模态能力，支持中英文。">
+<meta property="og:url" content="https://tliens.github.io/ai-model-rank/">
+<meta property="og:image" content="https://tliens.github.io/ai-model-rank/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI 大模型排行榜 - AI Rank">
+<meta name="twitter:description" content="实时 AI 大模型排行：Arena 评分、价格、上下文窗口多维对比。">
+<meta name="twitter:image" content="https://tliens.github.io/ai-model-rank/og-image.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"AI Rank 大模型排行榜","url":"https://tliens.github.io/ai-model-rank/","applicationCategory":"ReferenceApplication","operatingSystem":"Web","description":"实时 AI 大模型排行榜：LMArena 评分、API 价格、上下文窗口多维对比","offers":{"@type":"Offer","price":"0"},"inLanguage":["zh-CN","en"]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"这个大模型排行榜的数据来源是什么？","acceptedAnswer":{"@type":"Answer","text":"智能评分来自 LMArena（大模型竞技场）官方公开数据集，基于真实用户盲测投票的 Elo 评分；API 价格与上下文窗口来自 OpenRouter 与 models.dev 的实时接口。"}},
+{"@type":"Question","name":"排行榜多久更新一次？","acceptedAnswer":{"@type":"Answer","text":"每次打开页面都会实时拉取最新数据，LMArena 评分通常每天更新，价格随 API 市场变化即时同步。网络不可用时自动降级为内置快照数据。"}},
+{"@type":"Question","name":"性价比排行榜是怎么计算的？","acceptedAnswer":{"@type":"Answer","text":"性价比 = 50% 智能分位 + 50% 低价分位，即在全部可比模型中同时衡量 Arena 评分排名与输入价格排名，越高代表越便宜且越聪明。"}},
+{"@type":"Question","name":"使用这个网站需要付费或注册吗？","acceptedAnswer":{"@type":"Answer","text":"完全免费，无需注册。页面为纯前端实现，不收集任何个人数据，模型选择和对比均在本地完成。"}}]}
+</script>
+<style>
+:root{
+  --bg:#f7f7fb; --card:#ffffff; --fg:#16181d; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#4f46e5; --accent-soft:#eef2ff; --good:#059669; --warn:#b45309; --bad:#dc2626;
+  --chip:#f3f4f6; --chip-on:#4f46e5; --medal1:#f59e0b; --medal2:#94a3b8; --medal3:#b45309;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
+html[data-theme="dark"]{
+  --bg:#0d1017; --card:#161a23; --fg:#e6e8ee; --muted:#8b93a3; --line:#262c38;
+  --accent:#818cf8; --accent-soft:#1e2235; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  --chip:#1e2430; --chip-on:#4f46e5; --medal1:#fbbf24; --medal2:#94a3b8; --medal3:#d97706;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:12px;padding:10px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;color:var(--fg)}
+.brand .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#6366f1,#a855f7);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.spacer{flex:1}
+.srcbadges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);background:var(--chip);border-radius:99px;padding:3px 10px;border:1px solid transparent}
+.badge .dot{width:7px;height:7px;border-radius:99px;background:var(--muted)}
+.badge.live{color:var(--good)} .badge.live .dot{background:var(--good)}
+.badge.cache{color:var(--accent)} .badge.cache .dot{background:var(--accent)}
+.badge.snap .dot{background:var(--warn)} .badge.snap{color:var(--warn)}
+.iconbtn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:9px;padding:6px 11px;font-size:13px;cursor:pointer}
+.iconbtn:hover{border-color:var(--accent)}
+.iconbtn.spin{pointer-events:none;opacity:.6}
+.hero{padding:34px 0 10px}
+.hero h1{font-size:30px;margin:0 0 8px;letter-spacing:-.5px}
+.hero p.sub{color:var(--muted);margin:0 0 16px;max-width:760px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:13px;color:var(--muted);box-shadow:var(--shadow)}
+.stat b{color:var(--fg);font-size:16px;margin-right:4px}
+.banner{display:none;margin:12px 0 0;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);font-size:13px;border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+.banner.show{display:block}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:16px 0 4px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:99px;padding:7px 16px;font-size:14px;cursor:pointer;transition:all .15s}
+.tab.on{background:var(--chip-on);border-color:var(--chip-on);color:#fff;font-weight:600}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 0 2px}
+.search{flex:1;min-width:200px;max-width:340px;position:relative}
+.search input{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;background:var(--card);color:var(--fg)}
+.search input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer;user-select:none}
+.chip.on{background:var(--chip-on);border-color:var(--chip-on);color:#fff}
+.chip.cap.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.count{font-size:13px;color:var(--muted);padding:8px 0 6px}
+.tblwrap{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:860px}
+thead th{position:sticky;top:0;background:var(--card);text-align:left;padding:11px 12px;font-size:12px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap;z-index:5}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--accent-soft)}
+tbody tr.sel{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+tbody tr:last-child td{border-bottom:none}
+.rk{width:44px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.medal{display:inline-flex;width:26px;height:26px;border-radius:99px;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+.m1{background:var(--medal1)} .m2{background:var(--medal2)} .m3{background:var(--medal3)}
+.mname{font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mven{font-size:12px;color:var(--muted);font-weight:400}
+.tag{font-size:11px;border-radius:5px;padding:1px 6px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.tag.free{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+.tag.ow{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.elo{font-weight:700}
+.ci{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
+.na{color:var(--line);font-weight:400}
+.more{display:block;margin:14px auto;border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:10px;padding:9px 22px;font-size:14px;cursor:pointer}
+.faq{margin:36px 0 8px}
+.faq h2,.about h2{font-size:20px;margin:0 0 12px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+.faq summary{font-weight:600;cursor:pointer}
+.faq p{color:var(--muted);margin:8px 0 0;font-size:14px}
+.about{color:var(--muted);font-size:14px}
+footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+.cmpbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;justify-content:center;padding:12px}
+.cmpbar.show{display:flex}
+.cmpbar .in{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 14px;flex-wrap:wrap;max-width:94vw}
+.cmpchip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:8px;padding:4px 10px;font-size:13px}
+.cmpchip button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
+.cmpgo{background:var(--accent);border:none;color:#fff;border-radius:9px;padding:8px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.modal .box{background:var(--card);border-radius:16px;max-width:860px;width:100%;max-height:88vh;overflow:auto;padding:20px}
+.modal h3{margin:0 0 4px}
+.modal .close{float:right;border:none;background:var(--chip);color:var(--muted);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer}
+.ctable{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+.ctable th,.ctable td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.ctable th{color:var(--muted);font-weight:600;white-space:nowrap}
+.ctable td:not(:first-child){min-width:130px}
+.cname{font-weight:700}
+.cven{color:var(--muted);font-weight:400;font-size:12px;display:block}
+.bar{height:6px;border-radius:99px;background:var(--chip);margin-top:4px;min-width:80px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6366f1,#a855f7)}
+@media (max-width:760px){
+  .hero h1{font-size:23px}
+  .hide-m{display:none}
+  .srcbadges{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <span class="brand"><span class="logo">⚡</span><span data-i18n="brand">AI Rank · 大模型排行榜</span></span>
+    <span class="spacer"></span>
+    <span class="srcbadges">
+      <span class="badge snap" id="st-arena"><span class="dot"></span><span data-i18n="srcArena">Arena 评分</span></span>
+      <span class="badge snap" id="st-or"><span class="dot"></span><span data-i18n="srcPrice">价格</span></span>
+      <span class="badge snap" id="st-md"><span class="dot"></span><span data-i18n="srcLib">模型库</span></span>
+    </span>
+    <button class="iconbtn" id="btnRefresh" data-i18n-title="refresh" title="刷新数据">↻</button>
+    <button class="iconbtn" id="btnLang">EN</button>
+    <button class="iconbtn" id="btnTheme" title="Theme">◐</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 data-i18n="h1">AI 大模型排行榜</h1>
+    <p class="sub" data-i18n="sub">实时追踪 LMArena 人类偏好评分，多维对比主流大模型的智能水平、API 价格、上下文窗口与多模态能力——打开页面即拉取最新数据，无需登录、完全免费。</p>
+    <div class="stats">
+      <span class="stat"><b id="statModels">—</b><span data-i18n="statModels">个模型</span></span>
+      <span class="stat"><b id="statVendors">—</b><span data-i18n="statVendors">家厂商</span></span>
+      <span class="stat"><b id="statUpdated">—</b><span data-i18n="statUpdated">榜单日期</span></span>
+    </div>
+    <div class="banner" id="banner" data-i18n="banner">实时数据暂时不可用，当前显示内置快照数据。</div>
+  </section>
+
+  <nav class="tabs" id="tabs" aria-label="ranking dimension">
+    <button class="tab on" data-sort="elo" data-i18n="tabElo">🏆 智能榜</button>
+    <button class="tab" data-sort="eloZ" data-i18n="tabEloZ">🇨🇳 中文榜</button>
+    <button class="tab" data-sort="value" data-i18n="tabValue">💰 性价比</button>
+    <button class="tab" data-sort="price" data-i18n="tabPrice">低价</button>
+    <button class="tab" data-sort="ctx" data-i18n="tabCtx">长上下文</button>
+    <button class="tab" data-sort="new" data-i18n="tabNew">最新发布</button>
+  </nav>
+
+  <div class="filters">
+    <div class="search"><input id="q" type="search" data-i18n-ph="searchPh" placeholder="搜索模型或厂商…" aria-label="search"></div>
+    <div class="chips" id="vendorChips"></div>
+  </div>
+  <div class="filters">
+    <div class="chips" id="capChips">
+      <span class="chip cap" data-cap="vision" data-i18n="capVision">👁 视觉</span>
+      <span class="chip cap" data-cap="reason" data-i18n="capReason">💭 推理</span>
+      <span class="chip cap" data-cap="tools" data-i18n="capTools">🔧 工具</span>
+      <span class="chip cap" data-cap="ow" data-i18n="capOw">📦 开源权重</span>
+      <span class="chip cap" data-cap="free" data-i18n="capFree">🆓 有免费档</span>
+    </div>
+  </div>
+  <div class="count" id="count"></div>
+
+  <div class="tblwrap">
+    <table>
+      <thead><tr>
+        <th class="rk">#</th>
+        <th data-i18n="thModel">模型</th>
+        <th data-i18n="thElo" title="LMArena Elo (overall)">Arena 分</th>
+        <th class="hide-m" data-i18n="thEloZ" title="LMArena Elo (chinese)">中文分</th>
+        <th data-i18n="thPin" title="每百万输入 token 美元">输入 $/M</th>
+        <th class="hide-m" data-i18n="thPout">输出 $/M</th>
+        <th data-i18n="thCtx">上下文</th>
+        <th class="hide-m" data-i18n="thRel">发布</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <button class="more" id="btnMore" data-i18n="more" hidden>显示全部</button>
+
+  <section class="faq" id="faq">
+    <h2 data-i18n="faqH">常见问题</h2>
+    <details open>
+      <summary data-i18n="faq1q">榜单数据来源是什么？</summary>
+      <p data-i18n="faq1a">智能评分来自 LMArena（大模型竞技场）官方公开数据集——基于真实用户盲测投票的 Elo 评分；API 价格与上下文窗口来自 OpenRouter 与 models.dev 实时接口。打开页面即自动拉取最新数据。</p>
+    </details>
+    <details>
+      <summary data-i18n="faq2q">智能榜 / 中文榜 / 性价比分别怎么排？</summary>
+      <p data-i18n="faq2a">智能榜按 LMArena 综合类目（overall）Elo 降序；中文榜按其中文类目 Elo 降序，反映中文真实对话表现；性价比 = 50% 智能分位 + 50% 低价分位，同时奖励"聪明"和"便宜"。</p>
+    </details>
+    <details>
+      <summary data-i18n="faq3q">为什么有的模型价格显示"—"？</summary>
+      <p data-i18n="faq3a">部分模型（尤其是一些未上架主流 API 市场的模型）暂无公开定价数据，该列留空。评分、票数等信息不受影响。</p>
+    </details>
+    <details>
+      <summary data-i18n="faq4q">网站免费吗？会收集我的数据吗？</summary>
+      <p data-i18n="faq4a">完全免费、无需注册。页面为纯前端实现，不收集任何个人数据；你的筛选、对比与语言偏好只保存在本地浏览器。</p>
+    </details>
+  </section>
+
+  <footer>
+    <div data-i18n="footSrc">数据来源：LMArena 公开数据集（评分）· OpenRouter（价格 / 上下文）· models.dev（模型库）。评分与价格仅供参考，请以各厂商官方页面为准。</div>
+    <div style="margin-top:6px"><span data-i18n="footTip">提示：点击表格行可加入对比（最多 4 个），点击上方标签切换排行维度。</span> · <a href="https://lmarena.ai" target="_blank" rel="noopener">LMArena</a> · <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> · <a href="https://models.dev" target="_blank" rel="noopener">models.dev</a></div>
+  </footer>
+</main>
+
+<div class="cmpbar" id="cmpbar">
+  <div class="in">
+    <span style="font-size:13px;color:var(--muted)" data-i18n="cmpSel">已选：</span>
+    <span id="cmpchips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+    <button class="cmpgo" id="cmpgo" data-i18n="cmpGo">开始对比</button>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <button class="close" id="modalClose">✕</button>
+    <h3 data-i18n="cmpTitle">模型对比</h3>
+    <div style="font-size:13px;color:var(--muted)" data-i18n="cmpSub">价格单位：美元 / 每百万 token；评分为 LMArena Elo。</div>
+    <div id="cmpbody"></div>
+  </div>
+</div>
+
+<noscript><div class="wrap" style="padding:20px">本页需要启用 JavaScript 才能加载实时排行榜数据。 / This page requires JavaScript.</div></noscript>
+
+<script type="module">
+/* ===== 内置兜底快照（数据日期见 gen 字段） ===== */
+const SNAPSHOT = {"gen":"2026-09-14","arenaPub":"2026-09-13","rows":[{"name":"Claude Fable 5.1","vendor":"anthropic","pin":5.0,"pout":25.0,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1788285838,"arenaName":"claude-fable-5.1-max","elo":1507.5817496991563,"eloLo":1499.428825651965,"eloHi":1515.7346737463474,"rankO":1.0,"eloZ":1605.2547491006774,"rankZ":1.0,"votes":5783.0,"effort":true},{"name":"Claude Opus 5","vendor":"anthropic","pin":2.5,"pout":12.5,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1784912544,"rel":"2026-07-24","arenaName":"claude-opus-5-max","elo":1504.959276878543,"eloLo":1499.5011003502261,"eloHi":1510.41745340686,"rankO":2.0,"eloZ":1585.2963797038803,"rankZ":2.0,"votes":20706.0,"effort":true},{"name":"Claude Opus 5","vendor":"anthropic","pin":2.5,"pout":12.5,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1784912544,"rel":"2026-07-24","arenaName":"claude-opus-5-high","elo":1504.9163367198241,"eloLo":1500.7017496895871,"eloHi":1509.1309237500611,"rankO":3.0,"eloZ":1577.2642316412996,"rankZ":3.0,"votes":42617.0,"effort":true},{"name":"Claude Opus 4.6","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-02-04","arenaName":"claude-opus-4-6-high","elo":1502.9605478102897,"eloLo":1499.4672620931356,"eloHi":1506.4538335274435,"rankO":4.0,"eloZ":1550.8682266778142,"rankZ":6.0,"votes":71993.0,"effort":true},{"name":"Claude Opus 4.6","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-02-04","arenaName":"claude-opus-4-6","elo":1497.5435229763495,"eloLo":1494.142631992298,"eloHi":1500.944413960401,"rankO":5.0,"eloZ":1547.4706495182047,"rankZ":7.0,"votes":75878.0,"effort":false},{"name":"Gemini 3.8 Flash","vendor":"google","pin":0.375,"pout":1.875,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1788362056,"rel":"2026-09-02","arenaName":"gemini-3.8-flash-high","elo":1494.673989980363,"eloLo":1486.1392835301197,"eloHi":1503.2086964306066,"rankO":6.0,"eloZ":1555.7038562059943,"rankZ":5.0,"votes":5076.0,"effort":true},{"name":"Claude Fable 5","vendor":"anthropic","pin":5.0,"pout":25.0,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1781007515,"rel":"2026-06-07","arenaName":"claude-fable-5","elo":1492.62585065081,"eloLo":1487.8677099151625,"eloHi":1497.3839913864574,"rankO":7.0,"eloZ":1542.3585450361536,"rankZ":8.0,"votes":30057.0,"effort":false},{"name":"Gemini 3.7 Flash","vendor":"google","pin":0.375,"pout":1.875,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1786640581,"rel":"2026-08-13","arenaName":"gemini-3.7-flash-high","elo":1490.4920154663198,"eloLo":1482.312968198071,"eloHi":1498.6710627345685,"rankO":8.0,"eloZ":1563.4749127783737,"rankZ":4.0,"votes":5640.0,"effort":true},{"name":"Claude Opus 4.7","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-04-14","arenaName":"claude-opus-4-7-high","elo":1489.9999284927271,"eloLo":1486.139164326212,"eloHi":1493.8606926592422,"rankO":9.0,"eloZ":1534.2613490045053,"rankZ":13.0,"votes":60002.0,"effort":true},{"name":"Muse Spark 1.3","vendor":"meta","pin":1.25,"pout":4.25,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1788378359,"rel":"2026-09-02","arenaName":"muse-spark-1.3-max","elo":1489.7405893263447,"eloLo":1480.9145693724488,"eloHi":1498.5666092802405,"rankO":10.0,"eloZ":1538.209420728884,"rankZ":10.0,"votes":4723.0,"effort":true},{"name":"Muse Spark 1.2","vendor":"meta","pin":1.25,"pout":4.25,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1785959287,"rel":"2026-08-05","arenaName":"muse-spark-1.2 (xHigh)","elo":1489.4388916567375,"eloLo":1478.9569771471213,"eloHi":1499.920806166354,"rankO":11.0,"eloZ":1521.1860900478634,"rankZ":25.0,"votes":3227.0,"effort":false},{"name":"Claude Opus 4.7","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-04-14","arenaName":"claude-opus-4-7","elo":1483.3559792964222,"eloLo":1479.4974055794637,"eloHi":1487.2145530133807,"rankO":12.0,"eloZ":1525.3109857130808,"rankZ":19.0,"votes":61128.0,"effort":false},{"name":"Gemini 3.5 Flash","vendor":"google","pin":0.75,"pout":4.5,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1779193800,"rel":"2026-05-19","arenaName":"gemini-3.5-flash-high","elo":1482.1079294588812,"eloLo":1477.9383111898205,"eloHi":1486.2775477279417,"rankO":13.0,"eloZ":1529.3200020350928,"rankZ":16.0,"votes":38257.0,"effort":true},{"name":"Qwen3.8 Max","vendor":"qwen","pin":2,"pout":6,"ctx":1000000,"mout":131072,"vision":true,"reason":true,"tools":true,"rel":"2026-08-03","arenaName":"qwen3.8-max","elo":1480.5544386003721,"eloLo":1474.7904079314935,"eloHi":1486.318469269251,"rankO":14.0,"eloZ":1538.833746529413,"rankZ":9.0,"votes":16670.0,"effort":true},{"name":"Muse Spark 1.1","vendor":"meta","pin":1.25,"pout":4.25,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1784215741,"rel":"2026-04-08","arenaName":"muse-spark-1.1","elo":1480.1726777600436,"eloLo":1475.3489255378106,"eloHi":1484.9964299822764,"rankO":15.0,"eloZ":1519.2537887051383,"rankZ":27.0,"votes":27615.0,"effort":false},{"name":"Gemini 3.1 Pro Preview","vendor":"google","pin":1.0,"pout":6.0,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1771509627,"rel":"2026-02-19","arenaName":"gemini-3.1-pro-preview","elo":1480.0754473378818,"eloLo":1476.928990176176,"eloHi":1483.2219044995877,"rankO":16.0,"eloZ":1530.129665435885,"rankZ":15.0,"votes":106951.0,"effort":false},{"name":"Gemini 3 Pro","vendor":"google","arenaName":"gemini-3-pro","elo":1479.4701898730532,"eloLo":1475.643513176845,"eloHi":1483.2968665692613,"rankO":17.0,"eloZ":1524.8404047578372,"rankZ":20.0,"votes":40654.0,"effort":false},{"name":"Gemini 3.6 Flash","vendor":"google","pin":0.375,"pout":1.875,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1784646733,"rel":"2026-07-21","arenaName":"gemini-3.6-flash-high","elo":1476.1426227567108,"eloLo":1471.325761748565,"eloHi":1480.9594837648567,"rankO":18.0,"eloZ":1534.552308841558,"rankZ":12.0,"votes":26445.0,"effort":true},{"name":"Gemini 3.5 Flash","vendor":"google","pin":0.75,"pout":4.5,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1779193800,"rel":"2026-05-19","arenaName":"gemini-3.5-flash-medium","elo":1475.7232572853893,"eloLo":1471.2469117183878,"eloHi":1480.1996028523909,"rankO":19.0,"eloZ":1521.373115663571,"rankZ":24.0,"votes":36627.0,"effort":true},{"name":"GLM 5.3","vendor":"z-ai","pin":0.7,"pout":2.2,"ctx":1310720,"mout":943717,"reason":true,"tools":true,"ow":true,"created":1787086655,"rel":"2026-08-14","arenaName":"glm-5.3-max","elo":1475.0836598142798,"eloLo":1468.6781628389274,"eloHi":1481.4891567896323,"rankO":20.0,"eloZ":1516.180922775836,"rankZ":31.0,"votes":10960.0,"effort":true},{"name":"Qwen3.7 Max","vendor":"qwen","pin":1.475,"pout":4.425,"ctx":1000000,"mout":131072,"reason":true,"tools":true,"created":1779376861,"rel":"2026-05-21","arenaName":"qwen3.7-max-preview","elo":1473.9515440559937,"eloLo":1464.004967156134,"eloHi":1483.8981209558535,"rankO":21.0,"eloZ":1522.847926226089,"rankZ":22.0,"votes":3705.0,"effort":false},{"name":"Muse Spark 1.3","vendor":"meta","pin":1.25,"pout":4.25,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1788378359,"rel":"2026-09-02","arenaName":"muse-spark","elo":1473.3254184714117,"eloLo":1467.5066904619168,"eloHi":1479.1441464809066,"rankO":22.0,"eloZ":1503.9626009165256,"rankZ":41.0,"votes":13565.0,"effort":false},{"name":"Kimi K3","vendor":"moonshot","pin":3.0,"pout":15.0,"ctx":1048576,"mout":943718,"vision":true,"reason":true,"tools":true,"ow":true,"created":1784215858,"rel":"2026-07-16","arenaName":"kimi-k3-max","elo":1472.272610174843,"eloLo":1467.0557775819384,"eloHi":1477.489442767748,"rankO":23.0,"eloZ":1520.7200624881905,"rankZ":26.0,"votes":20987.0,"effort":true},{"name":"GLM 5.3 Flash","vendor":"z-ai","pin":0.075,"pout":0.25,"ctx":1310720,"mout":131072,"vision":true,"reason":true,"tools":true,"ow":true,"created":1787752741,"rel":"2026-08-26","arenaName":"glm-5.3-flash","elo":1471.894735379718,"eloLo":1465.3702658778293,"eloHi":1478.419204881607,"rankO":24.0,"eloZ":1527.062738470159,"rankZ":18.0,"votes":10038.0,"effort":false},{"name":"Qwen3 Max","vendor":"qwen","pin":0.78,"pout":3.9,"ctx":262144,"mout":65536,"tools":true,"created":1758662808,"rel":"2025-09-23","arenaName":"qwen3.5-max-preview","elo":1470.9317068152347,"eloLo":1465.9892637286832,"eloHi":1475.874149901786,"rankO":25.0,"eloZ":1531.8676530171824,"rankZ":14.0,"votes":21476.0,"effort":false},{"name":"GPT-5.5","vendor":"openai","pin":2.5,"pout":15.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1777051893,"rel":"2026-04-23","arenaName":"gpt-5.5-high","elo":1470.9288673754327,"eloLo":1467.141413144471,"eloHi":1474.716321606394,"rankO":26.0,"eloZ":1521.8549104649305,"rankZ":23.0,"votes":64924.0,"effort":true},{"name":"GPT-5.4","vendor":"openai","pin":1.25,"pout":7.5,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1772734352,"rel":"2026-03-05","arenaName":"gpt-5.4-high","elo":1469.6333474659352,"eloLo":1465.786243986016,"eloHi":1473.4804509458545,"rankO":27.0,"eloZ":1517.1335141192587,"rankZ":28.0,"votes":60537.0,"effort":true},{"name":"Ernie 5.1","vendor":"baidu","arenaName":"ernie-5.1","elo":1468.1952692602167,"eloLo":1463.5768900161186,"eloHi":1472.8136485043149,"rankO":28.0,"eloZ":1501.3957113472736,"rankZ":44.0,"votes":37058.0,"effort":false},{"name":"GLM 5.2","vendor":"z-ai","pin":0.7,"pout":2.2,"ctx":1048576,"mout":131072,"reason":true,"tools":true,"created":1781631930,"rel":"2026-06-13","arenaName":"glm-5.2-max","elo":1466.9328617073902,"eloLo":1462.3530399577037,"eloHi":1471.5126834570765,"rankO":29.0,"eloZ":1516.3156512327482,"rankZ":30.0,"votes":36798.0,"effort":true},{"name":"Gemini 3 Flash Preview","vendor":"google","pin":0.25,"pout":1.5,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1765987078,"rel":"2025-12-17","arenaName":"gemini-3-flash","elo":1466.7007384512058,"eloLo":1462.3094535537932,"eloHi":1471.0920233486183,"rankO":30.0,"eloZ":1508.7011951059221,"rankZ":37.0,"votes":30225.0,"effort":false},{"name":"GPT-5.5","vendor":"openai","pin":2.5,"pout":15.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1777051893,"rel":"2026-04-23","arenaName":"gpt-5.5","elo":1465.589323633367,"eloLo":1461.8284971216785,"eloHi":1469.3501501450553,"rankO":31.0,"eloZ":1537.1042021418293,"rankZ":11.0,"votes":66317.0,"effort":false},{"name":"MiMo-V2.5-Pro","vendor":"xiaomi","pin":0.435,"pout":0.87,"ctx":1050000,"mout":131072,"reason":true,"tools":true,"ow":true,"created":1776874273,"rel":"2026-04-22","arenaName":"mimo-v2.5-pro","elo":1464.7490308676067,"eloLo":1460.9195718200008,"eloHi":1468.5784899152125,"rankO":32.0,"eloZ":1506.1672532934015,"rankZ":39.0,"votes":60919.0,"effort":false},{"name":"GLM 5.1","vendor":"z-ai","pin":0.966,"pout":3.036,"ctx":204800,"mout":128000,"reason":true,"tools":true,"created":1775578025,"rel":"2026-03-27","arenaName":"glm-5.1","elo":1462.3752156419596,"eloLo":1458.5234051949742,"eloHi":1466.2270260889447,"rankO":33.0,"eloZ":1516.6006645496313,"rankZ":29.0,"votes":48901.0,"effort":false},{"name":"Claude Opus 4.8","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-05-28","arenaName":"claude-opus-4-8-high","elo":1460.8015951584546,"eloLo":1456.6445295216781,"eloHi":1464.9586607952313,"rankO":34.0,"eloZ":1499.350046975832,"rankZ":47.0,"votes":52535.0,"effort":true},{"name":"Claude Sonnet 4.6","vendor":"anthropic","pin":3,"pout":15,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-02-17","arenaName":"claude-sonnet-4-6","elo":1458.263082118117,"eloLo":1454.6751965007204,"eloHi":1461.8509677355132,"rankO":35.0,"eloZ":1488.9097788132556,"rankZ":59.0,"votes":66208.0,"effort":false},{"name":"Gemini 2.5 Pro","vendor":"google","pin":0.625,"pout":5.0,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1750169544,"rel":"2025-06-17","arenaName":"gemini-2.5-pro","elo":1457.7717092041273,"eloLo":1455.3054263475094,"eloHi":1460.237992060745,"rankO":36.0,"eloZ":1509.1940493768668,"rankZ":36.0,"votes":122554.0,"effort":false},{"name":"GPT-5.6 Sol","vendor":"openai","pin":1.0,"pout":5.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1783590850,"rel":"2026-07-09","arenaName":"gpt-5.6-sol-xhigh","elo":1455.0457372771807,"eloLo":1450.161110017499,"eloHi":1459.9303645368625,"rankO":37.0,"eloZ":1524.6011848348703,"rankZ":21.0,"votes":27069.0,"effort":false},{"name":"Kimi K2.6","vendor":"moonshot","pin":0.95,"pout":4.0,"ctx":262144,"mout":235929,"vision":true,"reason":true,"tools":true,"ow":true,"created":1776699402,"rel":"2026-04-21","arenaName":"kimi-k2.6","elo":1454.9198580085667,"eloLo":1450.4027791886772,"eloHi":1459.4369368284563,"rankO":38.0,"eloZ":1528.801704137737,"rankZ":17.0,"votes":37502.0,"effort":false},{"name":"Qwen3.7 Plus","vendor":"qwen","pin":0.32,"pout":1.28,"ctx":1000000,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1780491783,"rel":"2026-06-02","arenaName":"qwen3.7-plus","elo":1454.1959977558622,"eloLo":1449.7537860933166,"eloHi":1458.638209418408,"rankO":39.0,"eloZ":1510.3283666229245,"rankZ":34.0,"votes":39334.0,"effort":false},{"name":"Claude Opus 4.8","vendor":"anthropic","pin":5,"pout":25,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"rel":"2026-05-28","arenaName":"claude-opus-4-8","elo":1452.6615389407498,"eloLo":1448.5249069023496,"eloHi":1456.79817097915,"rankO":40.0,"eloZ":1505.6704240049423,"rankZ":40.0,"votes":53446.0,"effort":false},{"name":"GPT-5.4","vendor":"openai","pin":1.25,"pout":7.5,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1772734352,"rel":"2026-03-05","arenaName":"gpt-5.4","elo":1452.6407533203474,"eloLo":1448.8711480947952,"eloHi":1456.4103585458997,"rankO":41.0,"eloZ":1508.0859586379577,"rankZ":38.0,"votes":63526.0,"effort":false},{"name":"Grok 4.20","vendor":"xai","pin":1.25,"pout":2.5,"ctx":2000000,"mout":1800000,"vision":true,"reason":true,"tools":true,"created":1774979019,"arenaName":"grok-4.20-beta-0309-reasoning","elo":1450.7395914359724,"eloLo":1446.9799202099186,"eloHi":1454.4992626620262,"rankO":42.0,"eloZ":1480.8049522482015,"rankZ":65.0,"votes":62168.0,"effort":false},{"name":"DeepSeek V4 Pro 0423","vendor":"deepseek","pin":1.5999999999999999,"pout":3.1999999999999997,"ctx":1048576,"mout":393216,"reason":true,"tools":true,"ow":true,"created":1777000679,"rel":"2026-08-12","arenaName":"deepseek-v4-pro","elo":1450.6296556657103,"eloLo":1446.6462270591717,"eloHi":1454.613084272249,"rankO":43.0,"eloZ":1485.3969339785106,"rankZ":61.0,"votes":54130.0,"effort":false},{"name":"Claude Opus 4.5 (latest)","vendor":"anthropic","pin":5,"pout":25,"ctx":200000,"mout":64000,"vision":true,"reason":true,"tools":true,"rel":"2025-11-24","arenaName":"claude-opus-4-5-20251101","elo":1450.4590546195989,"eloLo":1447.2888931048715,"eloHi":1453.6292161343263,"rankO":44.0,"eloZ":1468.9611789994528,"rankZ":78.0,"votes":70013.0,"effort":false},{"name":"Grok 4.5","vendor":"xai","pin":2.0,"pout":6.0,"ctx":500000,"mout":450000,"vision":true,"reason":true,"tools":true,"created":1783523154,"rel":"2026-07-08","arenaName":"grok-4.5","elo":1450.1299788088197,"eloLo":1445.442687669753,"eloHi":1454.8172699478866,"rankO":45.0,"eloZ":1501.8759093391873,"rankZ":42.0,"votes":30103.0,"effort":false},{"name":"Grok 4.20 Multi-Agent","vendor":"xai","pin":1.25,"pout":2.5,"ctx":2000000,"mout":1800000,"vision":true,"reason":true,"created":1774979158,"arenaName":"grok-4.20-multi-agent-beta-0309","elo":1449.9392941401013,"eloLo":1446.16660741032,"eloHi":1453.7119808698826,"rankO":46.0,"eloZ":1477.7755636898207,"rankZ":69.0,"votes":60777.0,"effort":false},{"name":"Amazon Nova Experimental Chat 26 02 10","vendor":"amazon","arenaName":"amazon-nova-experimental-chat-26-02-10","elo":1447.9054811338794,"eloLo":1438.0765317540263,"eloHi":1457.7344305137324,"rankO":47.0,"eloZ":1456.821141853584,"rankZ":105.0,"votes":3369.0,"effort":false},{"name":"Dola Seed 2.0 Pro","vendor":"bytedance","arenaName":"dola-seed-2.0-pro","elo":1447.5910219281939,"eloLo":1444.163635255435,"eloHi":1451.0184086009526,"rankO":48.0,"eloZ":1489.141009303209,"rankZ":58.0,"votes":74159.0,"effort":false},{"name":"Claude Opus 4","vendor":"anthropic","pin":15.0,"pout":75.0,"ctx":200000,"mout":32000,"vision":true,"reason":true,"tools":true,"created":1747931245,"arenaName":"claude-opus-4-5-20251101-high-32k","elo":1447.0818203958963,"eloLo":1443.1796574588443,"eloHi":1450.9839833329484,"rankO":49.0,"eloZ":1464.6472037022504,"rankZ":91.0,"votes":36239.0,"effort":false},{"name":"Qwen3.6 Max Preview","vendor":"qwen","pin":1.0270000000000001,"pout":6.162,"ctx":262144,"mout":65536,"reason":true,"tools":true,"created":1777260242,"rel":"2026-04-20","arenaName":"qwen3.6-max-preview","elo":1446.331797785251,"eloLo":1437.9965197150573,"eloHi":1454.6670758554444,"rankO":50.0,"eloZ":1488.901961383351,"rankZ":60.0,"votes":5186.0,"effort":false},{"name":"GLM 5","vendor":"z-ai","pin":0.6,"pout":1.92,"ctx":204800,"mout":128000,"reason":true,"tools":true,"ow":true,"created":1770829182,"rel":"2026-02-11","arenaName":"glm-5","elo":1446.2715082160585,"eloLo":1441.950718698107,"eloHi":1450.59229773401,"rankO":51.0,"eloZ":1510.9281229198264,"rankZ":33.0,"votes":27605.0,"effort":false},{"name":"GPT-5.6 Terra","vendor":"openai","pin":1.0,"pout":6.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1783590857,"rel":"2026-07-09","arenaName":"gpt-5.6-terra-xhigh","elo":1446.2198901916286,"eloLo":1441.4141449733127,"eloHi":1451.0256354099445,"rankO":52.0,"eloZ":1513.929010193432,"rankZ":32.0,"votes":28119.0,"effort":false},{"name":"Kimi K2.5","vendor":"moonshot","pin":0.44999999999999996,"pout":2.25,"ctx":262144,"mout":235929,"vision":true,"reason":true,"tools":true,"created":1769487076,"arenaName":"kimi-k2.5-thinking","elo":1445.6394392107777,"eloLo":1442.3034319475928,"eloHi":1448.9754464739626,"rankO":53.0,"eloZ":1498.1754965256728,"rankZ":49.0,"votes":70513.0,"effort":true},{"name":"DeepSeek V3","vendor":"deepseek","pin":0.2574,"pout":1.0287,"ctx":163840,"mout":16000,"tools":true,"created":1735241320,"arenaName":"deepseek-v4-pro-high-preview","elo":1444.7541503628017,"eloLo":1440.6966059039537,"eloHi":1448.8116948216498,"rankO":54.0,"eloZ":1483.0283556430054,"rankZ":63.0,"votes":51485.0,"effort":false},{"name":"Nvidia Nemotron 3 Ultra 550b A55b Nvfp4","vendor":"nvidia","arenaName":"nvidia-nemotron-3-ultra-550b-a55b-nvfp4","elo":1444.6640265122355,"eloLo":1437.6962877118726,"eloHi":1451.6317653125982,"rankO":55.0,"eloZ":1490.5650455988932,"rankZ":56.0,"votes":10693.0,"effort":false},{"name":"Ernie 5.0 0110","vendor":"baidu","arenaName":"ernie-5.0-0110","elo":1444.4941963433394,"eloLo":1440.5501912118327,"eloHi":1448.438201474846,"rankO":56.0,"eloZ":1499.3058492068665,"rankZ":48.0,"votes":34860.0,"effort":false},{"name":"Grok 4.20","vendor":"xai","pin":1.25,"pout":2.5,"ctx":2000000,"mout":1800000,"vision":true,"reason":true,"tools":true,"created":1774979019,"arenaName":"grok-4.20-beta1","elo":1444.3375916713178,"eloLo":1439.7256444856414,"eloHi":1448.9495388569944,"rankO":57.0,"eloZ":1476.6610367682877,"rankZ":71.0,"votes":26599.0,"effort":false},{"name":"DeepSeek V4 Pro 0423","vendor":"deepseek","pin":1.5999999999999999,"pout":3.1999999999999997,"ctx":1048576,"mout":393216,"reason":true,"tools":true,"ow":true,"created":1777000679,"rel":"2026-08-12","arenaName":"deepseek-v4-pro-high-20260813","elo":1443.9463526493378,"eloLo":1437.1605021244288,"eloHi":1450.7322031742467,"rankO":58.0,"eloZ":1478.7001843683051,"rankZ":67.0,"votes":9008.0,"effort":false},{"name":"GPT-6 Astra","vendor":"openai","pin":5.0,"pout":25.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1788552838,"rel":"2026-09-04","arenaName":"gpt-6-astra-max","elo":1443.7243904445113,"eloLo":1432.0809442661064,"eloHi":1455.3678366229162,"rankO":59.0,"votes":2693.0,"effort":true},{"name":"Ernie 5.0 Preview 1203","vendor":"baidu","arenaName":"ernie-5.0-preview-1203","elo":1442.5408821080998,"eloLo":1436.0116888829396,"eloHi":1449.07007533326,"rankO":60.0,"eloZ":1496.9086644838414,"rankZ":50.0,"votes":9561.0,"effort":false},{"name":"Gemini 3 Flash Preview","vendor":"google","pin":0.25,"pout":1.5,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1765987078,"rel":"2025-12-17","arenaName":"gemini-3-flash (thinking-minimal)","elo":1442.3994046988937,"eloLo":1439.304926604632,"eloHi":1445.4938827931553,"rankO":61.0,"eloZ":1477.0050380768703,"rankZ":70.0,"votes":85799.0,"effort":false},{"name":"Claude Sonnet 5","vendor":"anthropic","pin":1.0,"pout":5.0,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1782843083,"rel":"2026-06-29","arenaName":"claude-sonnet-5-high","elo":1442.1464894477058,"eloLo":1437.5746794110637,"eloHi":1446.7182994843479,"rankO":62.0,"eloZ":1478.3920307406734,"rankZ":68.0,"votes":35301.0,"effort":true},{"name":"GPT-5.1","vendor":"openai","pin":0.625,"pout":5.0,"ctx":400000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1763060305,"rel":"2025-11-13","arenaName":"gpt-5.1-high","elo":1441.877879376701,"eloLo":1438.1379587135445,"eloHi":1445.6178000398577,"rankO":63.0,"eloZ":1493.5781807713731,"rankZ":54.0,"votes":40284.0,"effort":true},{"name":"Gemma 4 31B","vendor":"google","pin":0.39,"pout":0.9700000000000001,"ctx":262144,"mout":16384,"vision":true,"reason":true,"tools":true,"ow":true,"created":1775148486,"rel":"2026-04-02","free":true,"arenaName":"gemma-4-31b","elo":1441.680670089327,"eloLo":1434.1392979377226,"eloHi":1449.2220422409312,"rankO":64.0,"eloZ":1471.6085510259877,"rankZ":74.0,"votes":5894.0,"effort":false},{"name":"Hy3","vendor":"tencent","pin":0.13199999999999998,"pout":0.5279999999999999,"ctx":262144,"mout":128000,"reason":true,"tools":true,"created":1783344048,"arenaName":"hy3","elo":1440.584592681439,"eloLo":1433.3902415208768,"eloHi":1447.7789438420014,"rankO":65.0,"eloZ":1501.4662609128286,"rankZ":43.0,"votes":8047.0,"effort":false},{"name":"GLM 4.6","vendor":"z-ai","pin":0.43,"pout":1.75,"ctx":204800,"mout":16384,"reason":true,"tools":true,"ow":true,"created":1759235576,"rel":"2025-09-30","arenaName":"glm-4.6","elo":1440.478518588064,"eloLo":1436.5587641681543,"eloHi":1444.3982730079738,"rankO":66.0,"eloZ":1499.7103882767794,"rankZ":46.0,"votes":35061.0,"effort":false},{"name":"Inkling","vendor":"thinky","arenaName":"inkling","elo":1439.675758817386,"eloLo":1434.7660097484259,"eloHi":1444.5855078863462,"rankO":67.0,"eloZ":1490.068092805172,"rankZ":57.0,"votes":25922.0,"effort":false},{"name":"Qwen3.8 27B","vendor":"qwen","pin":0.21400000000000002,"pout":2.5500000000000003,"ctx":1000000,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1786722910,"arenaName":"qwen3.8-27b","elo":1439.2697603936188,"eloLo":1432.8441005023258,"eloHi":1445.695420284912,"rankO":68.0,"eloZ":1499.7757449397623,"rankZ":45.0,"votes":10697.0,"effort":false},{"name":"Qwen3 Max Thinking","vendor":"qwen","pin":0.78,"pout":3.9,"ctx":262144,"mout":65536,"reason":true,"tools":true,"created":1770671901,"arenaName":"qwen3-max-preview","elo":1439.1655434251022,"eloLo":1434.639120637893,"eloHi":1443.6919662123114,"rankO":69.0,"eloZ":1479.392521355328,"rankZ":66.0,"votes":27194.0,"effort":false},{"name":"GPT-5.2 Chat","vendor":"openai","pin":1.75,"pout":14,"ctx":128000,"mout":16384,"vision":true,"reason":true,"tools":true,"rel":"2025-12-11","arenaName":"gpt-5.2-chat-latest-20260210","elo":1438.898118607211,"eloLo":1434.810563835451,"eloHi":1442.9856733789713,"rankO":70.0,"eloZ":1460.9398074304424,"rankZ":96.0,"votes":34176.0,"effort":false},{"name":"Qwen3.5 397B A17B","vendor":"qwen","pin":0.55,"pout":3.5,"ctx":262144,"mout":235929,"vision":true,"reason":true,"tools":true,"ow":true,"created":1771223018,"rel":"2026-02-15","arenaName":"qwen3.5-397b-a17b","elo":1438.2629148058554,"eloLo":1434.973917852634,"eloHi":1441.5519117590768,"rankO":71.0,"eloZ":1495.2564661876916,"rankZ":51.0,"votes":77007.0,"effort":false},{"name":"Claude Sonnet 4.5","vendor":"anthropic","pin":3,"pout":15,"ctx":1000000,"mout":64000,"vision":true,"reason":true,"tools":true,"rel":"2025-09-29","arenaName":"claude-sonnet-4-5-20250929","elo":1438.2469788453327,"eloLo":1435.3468291797592,"eloHi":1441.1471285109062,"rankO":72.0,"eloZ":1458.91253504191,"rankZ":100.0,"votes":79628.0,"effort":false},{"name":"Grok 4.1 Thinking","vendor":"xai","arenaName":"grok-4.1-thinking","elo":1437.049352526253,"eloLo":1433.8468889661801,"eloHi":1440.2518160863258,"rankO":73.0,"eloZ":1457.631056227737,"rankZ":103.0,"votes":64152.0,"effort":true},{"name":"Qwen3.6 Plus","vendor":"qwen","pin":0.325,"pout":1.95,"ctx":1000000,"mout":65536,"vision":true,"reason":true,"tools":true,"created":1775133557,"rel":"2026-04-02","arenaName":"qwen3.6-plus","elo":1436.7371645331768,"eloLo":1432.525467719407,"eloHi":1440.9488613469464,"rankO":74.0,"eloZ":1472.0257835897203,"rankZ":72.0,"votes":45319.0,"effort":false},{"name":"MiMo-V2-Pro","vendor":"xiaomi","pin":0.435,"pout":0.87,"ctx":1048576,"mout":131072,"reason":true,"tools":true,"rel":"2026-03-18","arenaName":"mimo-v2-pro","elo":1436.4913822407943,"eloLo":1431.7580025976815,"eloHi":1441.2247618839071,"rankO":75.0,"eloZ":1455.27698975037,"rankZ":110.0,"votes":24365.0,"effort":false},{"name":"GLM 5V Turbo","vendor":"z-ai","pin":1.2,"pout":4.0,"ctx":202752,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1775061458,"rel":"2026-04-01","arenaName":"glm-5v-turbo","elo":1436.4899071922214,"eloLo":1429.812740058608,"eloHi":1443.1670743258348,"rankO":76.0,"eloZ":1491.934552295117,"rankZ":55.0,"votes":9361.0,"effort":false},{"name":"Grok 4.1","vendor":"xai","arenaName":"grok-4.1","elo":1436.2364786930038,"eloLo":1433.0548726089203,"eloHi":1439.4180847770874,"rankO":77.0,"eloZ":1465.4231685830212,"rankZ":87.0,"votes":66340.0,"effort":false},{"name":"GLM 4.7","vendor":"z-ai","pin":0.39999999999999997,"pout":1.75,"ctx":204800,"mout":131072,"reason":true,"tools":true,"ow":true,"created":1766378014,"rel":"2025-12-22","arenaName":"glm-4.7","elo":1435.8941412270676,"eloLo":1429.804924019247,"eloHi":1441.983358434888,"rankO":78.0,"eloZ":1495.2016574798365,"rankZ":52.0,"votes":11893.0,"effort":false},{"name":"Gemini 3.5 Flash Lite","vendor":"google","pin":0.15,"pout":1.25,"ctx":1048576,"mout":65536,"vision":true,"audio":true,"reason":true,"tools":true,"created":1784646726,"rel":"2026-07-21","arenaName":"gemini-3.5-flash-lite","elo":1435.5426509480046,"eloLo":1430.5950549345662,"eloHi":1440.4902469614433,"rankO":79.0,"eloZ":1466.3372665644204,"rankZ":82.0,"votes":26165.0,"effort":false},{"name":"Gemma 4 26B A4B","vendor":"google","pin":0.09,"pout":0.3,"ctx":262144,"mout":235929,"vision":true,"reason":true,"tools":true,"ow":true,"created":1775227989,"rel":"2026-04-02","free":true,"arenaName":"gemma-4-26b-a4b","elo":1434.473302772797,"eloLo":1426.876736672262,"eloHi":1442.0698688733319,"rankO":80.0,"eloZ":1482.7471740288872,"rankZ":64.0,"votes":5804.0,"effort":false},{"name":"Claude Sonnet 4","vendor":"anthropic","pin":3.0,"pout":15.0,"ctx":1000000,"mout":64000,"vision":true,"reason":true,"tools":true,"created":1747930371,"arenaName":"claude-sonnet-4-5-20250929-high-32k","elo":1433.9444221972358,"eloLo":1431.1398274239261,"eloHi":1436.7490169705454,"rankO":81.0,"eloZ":1457.7806979410204,"rankZ":102.0,"votes":80980.0,"effort":false},{"name":"MiniMax M3","vendor":"minimax","pin":0.3,"pout":1.2,"ctx":1048576,"mout":512000,"vision":true,"reason":true,"tools":true,"ow":true,"created":1780245374,"rel":"2026-06-01","arenaName":"minimax-m3","elo":1433.499392232071,"eloLo":1429.3107760671903,"eloHi":1437.6880083969513,"rankO":82.0,"eloZ":1460.6205258391763,"rankZ":97.0,"votes":48540.0,"effort":false},{"name":"DeepSeek V4 Flash 0423","vendor":"deepseek","pin":0.088606,"pout":0.177212,"ctx":1048576,"mout":384000,"reason":true,"tools":true,"ow":true,"created":1777000666,"rel":"2026-09-10","arenaName":"deepseek-v4-flash","elo":1431.7883409845408,"eloLo":1427.6611038728458,"eloHi":1435.9155780962355,"rankO":83.0,"eloZ":1465.0509459306643,"rankZ":89.0,"votes":48887.0,"effort":false},{"name":"Ernie 5.0 Preview 1022","vendor":"baidu","arenaName":"ernie-5.0-preview-1022","elo":1430.4072331555146,"eloLo":1421.5736908157617,"eloHi":1439.2407754952678,"rankO":84.0,"eloZ":1509.3816630026379,"rankZ":35.0,"votes":4663.0,"effort":false},{"name":"GLM 4.5","vendor":"z-ai","pin":0.6,"pout":2.2,"ctx":131072,"mout":98304,"reason":true,"tools":true,"ow":true,"created":1753471347,"rel":"2025-07-28","arenaName":"glm-4.5","elo":1430.204671916151,"eloLo":1425.2926278314833,"eloHi":1435.116716000819,"rankO":85.0,"eloZ":1465.948319761558,"rankZ":84.0,"votes":23712.0,"effort":false},{"name":"GPT-5.6 Luna","vendor":"openai","pin":0.09999999999999999,"pout":0.6,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1783590864,"rel":"2026-07-09","arenaName":"gpt-5.6-luna-xhigh","elo":1429.8880619280424,"eloLo":1425.1154914806634,"eloHi":1434.6606323754215,"rankO":86.0,"eloZ":1467.2452934943476,"rankZ":81.0,"votes":28547.0,"effort":false},{"name":"Grok 4.6","vendor":"xai","pin":2.0,"pout":6.0,"ctx":500000,"mout":450000,"vision":true,"reason":true,"tools":true,"created":1786548957,"rel":"2026-08-12","arenaName":"grok-4.6-high","elo":1429.8648410703747,"eloLo":1424.03688749706,"eloHi":1435.6927946436895,"rankO":87.0,"eloZ":1494.3651761736398,"rankZ":53.0,"votes":15521.0,"effort":true},{"name":"Chatgpt 4o Latest 20250326","vendor":"openai","arenaName":"chatgpt-4o-latest-20250326","elo":1428.7834891954988,"eloLo":1425.9745260666239,"eloHi":1431.5924523243739,"rankO":88.0,"eloZ":1456.2380439467133,"rankZ":107.0,"votes":80677.0,"effort":false},{"name":"R1 0528","vendor":"deepseek","pin":0.5,"pout":2.1500000000000004,"ctx":163840,"mout":32768,"reason":true,"tools":true,"created":1748455170,"arenaName":"deepseek-r1-0528","elo":1427.525758137932,"eloLo":1421.8630852104557,"eloHi":1433.1884310654082,"rankO":89.0,"eloZ":1443.5145614953133,"rankZ":127.0,"votes":18091.0,"effort":false},{"name":"MiMo-V2.5","vendor":"xiaomi","pin":0.14,"pout":0.28,"ctx":1050000,"mout":131072,"vision":true,"audio":true,"reason":true,"tools":true,"ow":true,"created":1776874269,"rel":"2026-04-22","arenaName":"mimo-v2.5","elo":1427.4171267973738,"eloLo":1423.0910043091728,"eloHi":1431.743249285575,"rankO":90.0,"eloZ":1470.5783783551585,"rankZ":75.0,"votes":44466.0,"effort":false},{"name":"Mistral Medium 3.5","vendor":"mistral","pin":1.5,"pout":7.5,"ctx":262144,"mout":262144,"vision":true,"reason":true,"tools":true,"ow":true,"rel":"2026-04-29","arenaName":"mistral-large-3","elo":1427.0440267157855,"eloLo":1424.0531904369711,"eloHi":1430.0348629946,"rankO":91.0,"eloZ":1445.872747235997,"rankZ":124.0,"votes":69028.0,"effort":false},{"name":"Longcat Flash Chat 2602 Exp","vendor":"longcat","arenaName":"longcat-flash-chat-2602-exp","elo":1425.846610238856,"eloLo":1421.2672783976732,"eloHi":1430.425942080039,"rankO":92.0,"eloZ":1465.9518685459232,"rankZ":83.0,"votes":27962.0,"effort":false},{"name":"Grok 3 Preview 02 24","vendor":"xai","arenaName":"grok-3-preview-02-24","elo":1425.4839227590574,"eloLo":1421.1726066850624,"eloHi":1429.7952388330525,"rankO":93.0,"eloZ":1448.6709003875058,"rankZ":121.0,"votes":32414.0,"effort":false},{"name":"DeepSeek V3.2","vendor":"deepseek","pin":0.26899999999999996,"pout":0.39999999999999997,"ctx":163840,"mout":65536,"reason":true,"tools":true,"created":1764594642,"arenaName":"deepseek-v3.2-exp-thinking","elo":1424.9518624305506,"eloLo":1418.375600496095,"eloHi":1431.5281243650063,"rankO":94.0,"eloZ":1459.8544039656533,"rankZ":99.0,"votes":8905.0,"effort":true},{"name":"Mistral Medium 3.5","vendor":"mistral","pin":1.5,"pout":7.5,"ctx":262144,"mout":262144,"vision":true,"reason":true,"tools":true,"ow":true,"rel":"2026-04-29","arenaName":"mistral-medium-2508","elo":1424.811183646475,"eloLo":1422.2080991050739,"eloHi":1427.4142681878761,"rankO":95.0,"eloZ":1449.5171057651276,"rankZ":117.0,"votes":92697.0,"effort":false},{"name":"DeepSeek V3.2","vendor":"deepseek","pin":0.26899999999999996,"pout":0.39999999999999997,"ctx":163840,"mout":65536,"reason":true,"tools":true,"created":1764594642,"arenaName":"deepseek-v3.2","elo":1424.8000256273892,"eloLo":1421.2727171921156,"eloHi":1428.3273340626629,"rankO":96.0,"eloZ":1455.4010253704923,"rankZ":109.0,"votes":46458.0,"effort":false},{"name":"DeepSeek V4 Flash 0423","vendor":"deepseek","pin":0.088606,"pout":0.177212,"ctx":1048576,"mout":384000,"reason":true,"tools":true,"ow":true,"created":1777000666,"rel":"2026-09-10","arenaName":"deepseek-v4-flash-high-preview","elo":1423.747665551525,"eloLo":1419.5601737930067,"eloHi":1427.9351573100435,"rankO":97.0,"eloZ":1467.651282391578,"rankZ":80.0,"votes":48597.0,"effort":false},{"name":"Longcat Flash Chat","vendor":"longcat","arenaName":"longcat-flash-chat","elo":1422.9086673412612,"eloLo":1416.515836604153,"eloHi":1429.3014980783696,"rankO":98.0,"eloZ":1448.7899439948617,"rankZ":119.0,"votes":11154.0,"effort":false},{"name":"DeepSeek V3.2","vendor":"deepseek","pin":0.26899999999999996,"pout":0.39999999999999997,"ctx":163840,"mout":65536,"reason":true,"tools":true,"created":1764594642,"arenaName":"deepseek-v3.2-exp","elo":1422.5948093990742,"eloLo":1416.2067110095497,"eloHi":1428.9829077885988,"rankO":99.0,"eloZ":1462.5634308040446,"rankZ":92.0,"votes":11760.0,"effort":false},{"name":"GPT-5.1","vendor":"openai","pin":0.625,"pout":5.0,"ctx":400000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1763060305,"rel":"2025-11-13","arenaName":"gpt-5.1","elo":1422.5730995952028,"eloLo":1418.958421176783,"eloHi":1426.1877780136228,"rankO":100.0,"eloZ":1469.5711317905832,"rankZ":77.0,"votes":42982.0,"effort":false},{"name":"Schematron V2 Turbo","vendor":"other","pin":0.03,"pout":0.15,"ctx":128000,"mout":8192,"created":1789176949},{"name":"Schematron V2 Small","vendor":"other","pin":0.049999999999999996,"pout":0.22999999999999998,"ctx":128000,"mout":4096,"created":1789176933},{"name":"GPT Astra Latest","vendor":"other","pin":10.0,"pout":50.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789130932},{"name":"GPT Sol Latest","vendor":"other","pin":2.0,"pout":10.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789130928},{"name":"GPT Terra Latest","vendor":"other","pin":2.0,"pout":12.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789130925},{"name":"GPT Luna Latest","vendor":"other","pin":0.19999999999999998,"pout":1.2,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789130922},{"name":"Fugu Ultra v2","vendor":"other","pin":5.0,"pout":30.0,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789105383},{"name":"Fugu Max","vendor":"other","pin":2.0,"pout":6.0,"ctx":1000000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1789104771},{"name":"Ling 3.0 Flash VL","vendor":"inclusion","pin":0.06,"pout":0.18,"ctx":131072,"mout":32768,"vision":true,"reason":true,"tools":true,"created":1789056114,"free":true},{"name":"DeepSeek V4.1 Flash","vendor":"deepseek","pin":0.15,"pout":0.6,"ctx":1048576,"mout":384000,"vision":true,"reason":true,"tools":true,"created":1789021285},{"name":"Mercury 2.5","vendor":"other","pin":0.04,"pout":0.15,"ctx":260000,"mout":65536,"reason":true,"tools":true,"created":1788892137},{"name":"GPT-6 Astra Pro","vendor":"openai","pin":5.0,"pout":25.0,"ctx":1050000,"mout":128000,"vision":true,"reason":true,"tools":true,"created":1788552835},{"name":"Qwen3.8 Max (0902)","vendor":"qwen","pin":2.0,"pout":6.0,"ctx":1000000,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1788469704},{"name":"Muse Spark 1.3 Contributor","vendor":"meta","pin":0.09999999999999999,"pout":0.19999999999999998,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1788381519,"rel":"2026-09-02"},{"name":"Granite 4.2 8B","vendor":"other","pin":0.06,"pout":0.25,"ctx":131072,"mout":117964,"reason":true,"tools":true,"created":1788206780},{"name":"Hy4 preview","vendor":"tencent","pin":0.834,"pout":2.501,"ctx":1048576,"mout":64000,"reason":true,"tools":true,"created":1787897375},{"name":"Ling 3.0 Flash Fin","vendor":"inclusion","pin":0.06,"pout":0.18,"ctx":262144,"mout":235929,"reason":true,"tools":true,"created":1787846290,"free":true},{"name":"GLM Flash Latest","vendor":"other","pin":0.075,"pout":0.25,"ctx":1310720,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1787817633},{"name":"Qwen3.8 Flash","vendor":"qwen","pin":0.15,"pout":0.47,"ctx":1000000,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1787773060,"rel":"2026-08-26"},{"name":"Muse Spark 1.2 Contributor","vendor":"meta","pin":0.09999999999999999,"pout":0.19999999999999998,"ctx":1048576,"mout":943718,"vision":true,"audio":true,"reason":true,"tools":true,"created":1787336476,"rel":"2026-08-05"},{"name":"DeepSeek V4 Flash Vision Exp","vendor":"deepseek","pin":0.11,"pout":0.33,"ctx":1048576,"mout":943718,"vision":true,"reason":true,"tools":true,"ow":true,"created":1787311563,"rel":"2026-09-10"},{"name":"Hy-MT2-1.8B","vendor":"tencent","pin":0.044,"pout":0.17700000000000002,"ctx":8192,"mout":4096,"created":1787231581},{"name":"Hy-MT2-30B-A3B","vendor":"tencent","pin":0.074,"pout":0.295,"ctx":8192,"mout":4096,"created":1787231561},{"name":"GLM Latest","vendor":"other","pin":0.9199999999999999,"pout":3.1372,"ctx":1310720,"mout":943718,"reason":true,"tools":true,"created":1787151053},{"name":"Hy-MT2-7B","vendor":"tencent","pin":0.074,"pout":0.295,"ctx":8192,"mout":4096,"created":1787148797},{"name":"Seed 2.1 Turbo","vendor":"other","pin":0.5,"pout":2.5,"ctx":262144,"mout":235929,"vision":true,"reason":true,"tools":true,"created":1786552176},{"name":"Qwen3.8 2.4T A95B","vendor":"qwen","pin":2.0,"pout":6.0,"ctx":1048576,"mout":131072,"reason":true,"tools":true,"created":1786551702},{"name":"Seed-2.0-Code","vendor":"other","pin":0.5,"pout":3.0,"ctx":262144,"mout":131072,"vision":true,"reason":true,"tools":true,"created":1786550701},{"name":"DeepSeek V4 Pro 0813","vendor":"deepseek","pin":0.66,"pout":1.9800000000000002,"ctx":1048576,"mout":384000,"reason":true,"tools":true,"created":1786549364},{"name":"Nemotron 3.5 Lightning","vendor":"nvidia","pin":0.08,"pout":0.19999999999999998,"ctx":262144,"mout":131072,"reason":true,"tools":true,"created":1786452751,"free":true}]};
+
+/* ===== i18n ===== */
+const I18N = {
+  zh: {
+    brand:'AI Rank · 大模型排行榜', srcArena:'Arena 评分', srcPrice:'价格', srcLib:'模型库',
+    h1:'AI 大模型排行榜',
+    sub:'实时追踪 LMArena 人类偏好评分，多维对比主流大模型的智能水平、API 价格、上下文窗口与多模态能力——打开页面即拉取最新数据，无需登录、完全免费。',
+    statModels:'个模型', statVendors:'家厂商', statUpdated:'榜单日期',
+    banner:'实时数据暂时不可用，当前显示内置快照数据。',
+    tabElo:'🏆 智能榜', tabEloZ:'🇨🇳 中文榜', tabValue:'💰 性价比', tabPrice:'低价', tabCtx:'长上下文', tabNew:'最新发布',
+    searchPh:'搜索模型或厂商…', capVision:'👁 视觉', capReason:'💭 推理', capTools:'🔧 工具', capOw:'📦 开源权重', capFree:'🆓 有免费档',
+    thModel:'模型', thElo:'Arena 分', thEloZ:'中文分', thPin:'输入 $/M', thPout:'输出 $/M', thCtx:'上下文', thRel:'发布',
+    more:'显示全部', shown:'显示', of:'/', models:'个模型',
+    faqH:'常见问题',
+    faq1q:'榜单数据来源是什么？',
+    faq1a:'智能评分来自 LMArena（大模型竞技场）官方公开数据集——基于真实用户盲测投票的 Elo 评分；API 价格与上下文窗口来自 OpenRouter 与 models.dev 实时接口。打开页面即自动拉取最新数据。',
+    faq2q:'智能榜 / 中文榜 / 性价比分别怎么排？',
+    faq2a:'智能榜按 LMArena 综合类目（overall）Elo 降序；中文榜按其中文类目 Elo 降序，反映中文真实对话表现；性价比 = 50% 智能分位 + 50% 低价分位，同时奖励"聪明"和"便宜"。',
+    faq3q:'为什么有的模型价格显示"—"？',
+    faq3a:'部分模型（尤其是一些未上架主流 API 市场的模型）暂无公开定价数据，该列留空。评分、票数等信息不受影响。',
+    faq4q:'网站免费吗？会收集我的数据吗？',
+    faq4a:'完全免费、无需注册。页面为纯前端实现，不收集任何个人数据；你的筛选、对比与语言偏好只保存在本地浏览器。',
+    footSrc:'数据来源：LMArena 公开数据集（评分）· OpenRouter（价格 / 上下文）· models.dev（模型库）。评分与价格仅供参考，请以各厂商官方页面为准。',
+    footTip:'提示：点击表格行可加入对比（最多 4 个），点击上方标签切换排行维度。',
+    cmpSel:'已选：', cmpGo:'开始对比', cmpTitle:'模型对比',
+    cmpSub:'价格单位：美元 / 每百万 token；评分为 LMArena Elo。',
+    cmpMax:'最多对比 4 个模型', cmpEmpty:'暂无', fieldModel:'模型', fieldElo:'Arena 智能分', fieldEloZ:'中文分',
+    fieldPin:'输入价格', fieldPout:'输出价格', fieldCtx:'上下文窗口', fieldMout:'最大输出',
+    fieldMod:'多模态输入', fieldCap:'能力', fieldRel:'发布', fieldVotes:'Arena 票数',
+    capV:'视觉', capR:'推理', capT:'工具', capO:'开源权重', capF:'免费档', capE:'高推理档',
+    titleZh:'AI 大模型排行榜 - 实时对比 Arena 评分、价格与上下文窗口 | AI Rank',
+    updatedAt:'更新', effTag:'高推理档', arenaOnly:'仅榜内',
+  },
+  en: {
+    brand:'AI Rank · Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
+    h1:'AI Model Leaderboard',
+    sub:'Live LMArena human-preference Elo scores, side-by-side with API pricing, context window and multimodal capabilities of leading AI models. Fresh data on every page load — free, no sign-up.',
+    statModels:'models', statVendors:'vendors', statUpdated:'Leaderboard date',
+    banner:'Live data unavailable — showing the built-in snapshot.',
+    tabElo:'🏆 Intelligence', tabEloZ:'🇨🇳 Chinese', tabValue:'💰 Value', tabPrice:'Cheapest', tabCtx:'Long context', tabNew:'Newest',
+    searchPh:'Search models or vendors…', capVision:'👁 Vision', capReason:'💭 Reasoning', capTools:'🔧 Tools', capOw:'📦 Open weights', capFree:'🆓 Free tier',
+    thModel:'Model', thElo:'Arena', thEloZ:'Chinese', thPin:'Input $/M', thPout:'Output $/M', thCtx:'Context', thRel:'Released',
+    more:'Show all', shown:'Showing', of:'/', models:'models',
+    faqH:'FAQ',
+    faq1q:'Where does the leaderboard data come from?',
+    faq1a:'Intelligence scores come from the official LMArena public dataset (Elo from real blind human votes); API pricing and context windows come from live OpenRouter and models.dev APIs, refreshed on every page load.',
+    faq2q:'How are the Intelligence / Chinese / Value boards ranked?',
+    faq2a:'Intelligence sorts by the LMArena overall Elo; Chinese sorts by the Chinese-category Elo. Value = 50% intelligence percentile + 50% cheapness percentile — rewarding models that are both smart and affordable.',
+    faq3q:'Why do some models show "—" for price?',
+    faq3a:'Some models (especially ones not listed on major API marketplaces) have no public pricing yet; those cells stay empty. Scores and votes are unaffected.',
+    faq4q:'Is it free? Do you collect my data?',
+    faq4a:'Completely free, no sign-up. The page is pure front-end and collects no personal data; your filters, comparisons and language preference stay in your browser.',
+    footSrc:'Data sources: LMArena public dataset (scores) · OpenRouter (pricing / context) · models.dev (catalog). For reference only — always check official vendor pages.',
+    footTip:'Tip: click rows to add models to comparison (up to 4); switch ranking dimension with the tabs above.',
+    cmpSel:'Selected:', cmpGo:'Compare', cmpTitle:'Model comparison',
+    cmpSub:'Prices in USD per 1M tokens; scores are LMArena Elo.',
+    cmpMax:'Up to 4 models', cmpEmpty:'—', fieldModel:'Model', fieldElo:'Arena Elo', fieldEloZ:'Chinese Elo',
+    fieldPin:'Input price', fieldPout:'Output price', fieldCtx:'Context window', fieldMout:'Max output',
+    fieldMod:'Multimodal input', fieldCap:'Capabilities', fieldRel:'Released', fieldVotes:'Arena votes',
+    capV:'vision', capR:'reasoning', capT:'tools', capO:'open weights', capF:'free tier', capE:'high-effort variant',
+    titleZh:'AI Model Leaderboard - Live Arena Scores, Pricing & Context | AI Rank',
+    updatedAt:'updated', effTag:'high-effort', arenaOnly:'leaderboard only',
+  }
+};
+
+/* ===== 厂商映射（需与 scripts/build_snapshot.py 保持同步） ===== */
+const VENDOR_ALIAS = {
+  openai:'openai', anthropic:'anthropic', google:'google', deepseek:'deepseek',
+  zhipuai:'z-ai', 'z-ai':'z-ai', zai:'z-ai', moonshotai:'moonshot', moonshot:'moonshot',
+  qwen:'qwen', alibaba:'qwen', 'qwen-team':'qwen', xai:'xai', 'x-ai':'xai',
+  'meta-llama':'meta', meta:'meta', mistralai:'mistral', mistral:'mistral',
+  microsoft:'microsoft', minimax:'minimax', xiaomi:'xiaomi', longcat:'longcat',
+  meituan:'longcat', stepfun:'stepfun', 'stepfun-ai':'stepfun', nvidia:'nvidia',
+  cohere:'cohere', perplexity:'perplexity', amazon:'amazon', 'amazon-nova':'amazon',
+  baidu:'baidu', tencent:'tencent', bytedance:'bytedance', thinky:'thinky',
+  inclusionai:'inclusion', liquid:'liquid', ai21:'ai21', nousresearch:'nous',
+  databricks:'databricks', reka:'reka',
+};
+const VENDOR_NAME = {
+  openai:'OpenAI', anthropic:'Anthropic', google:'Google', deepseek:'DeepSeek',
+  'z-ai':'Z.ai', moonshot:'Moonshot AI', qwen:'Qwen', xai:'xAI', meta:'Meta',
+  mistral:'Mistral AI', microsoft:'Microsoft', minimax:'MiniMax', xiaomi:'Xiaomi',
+  longcat:'LongCat', stepfun:'StepFun', nvidia:'NVIDIA', cohere:'Cohere',
+  perplexity:'Perplexity', amazon:'Amazon', baidu:'Baidu', tencent:'Tencent',
+  bytedance:'ByteDance', thinky:'Thinky', inclusion:'InclusionAI', liquid:'Liquid',
+  ai21:'AI21', nous:'Nous Research', databricks:'Databricks', reka:'Reka',
+  arena:'其他', other:'其他',
+};
+const FIRST_PARTY = ['openai','anthropic','google','xai','deepseek','zhipuai','moonshotai',
+  'alibaba','minimax','mistral','meta','nvidia','xiaomi','longcat','stepfun','cohere',
+  'perplexity','microsoft','baidu','tencent','bytedance','thinky'];
+const BAD_ID = /image|imagine|tts|whisper|embed|video|-asr|transcribe|omni-human/i;
+
+/* ===== 归一化（与 build_snapshot.py 逻辑一致） ===== */
+function norm(s){
+  return String(s).toLowerCase()
+    .replace(/\s*\([^)]*\)/g, '')
+    .replace(/[:_]/g, '-')
+    .replace(/-?\d{8}/g, '')
+    .replace(/-(20\d{2}|2\d{3})$/, '')
+    .replace(/-(max|high|medium|low|minimal|thinking|chat|latest|preview|exp)$/g, '')
+    .replace(/-h$/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '') || s;
+}
+const priceOk = x => x != null && x >= 0;
+
+/* ===== 工具 ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtPrice(p){
+  if (p == null) return null;
+  if (p === 0) return '0';
+  if (p >= 100) return String(Math.round(p));
+  let s = p >= 1 ? p.toFixed(2) : p.toFixed(3);
+  s = s.replace(/\.?0+$/, '');
+  return s;
+}
+function fmtCtx(n){
+  if (n == null) return null;
+  if (n >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (n >= 1e3) return Math.round(n / 1e3) + 'K';
+  return String(n);
+}
+const fmtElo = x => x == null ? null : String(Math.round(x));
+function fmtRel(r){
+  if (r == null) return null;
+  if (typeof r === 'number'){
+    const d = new Date(r * 1000);
+    return isNaN(d) ? null : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return String(r).slice(0, 7);
+}
+function fetchTimeout(url, ms){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, {cache: 'no-store', signal: ctrl.signal}).finally(() => clearTimeout(t));
+}
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+};
+
+/* ===== 状态 ===== */
+const state = {
+  lang: null, sort: 'elo', q: '', vendors: new Set(), caps: new Set(),
+  rows: [], src: {arena: 'snap', or: 'snap', md: 'snap'},
+  arenaPub: null, cmp: [], limit: 100, liveTried: false,
+};
+
+/* ===== 快照 → 行 ===== */
+function slimToRow(d){
+  return {
+    name: d.name, vendor: d.vendor || 'arena', arenaName: d.arenaName || null,
+    elo: d.elo ?? null, eloLo: d.eloLo ?? null, eloHi: d.eloHi ?? null,
+    rankO: d.rankO ?? null, eloZ: d.eloZ ?? null, rankZ: d.rankZ ?? null,
+    votes: d.votes ?? null, effort: !!d.effort,
+    pin: d.pin ?? null, pout: d.pout ?? null, ctx: d.ctx ?? null, mout: d.mout ?? null,
+    vision: !!d.vision, audio: !!d.audio, reason: !!d.reason, tools: !!d.tools,
+    ow: !!d.ow, free: !!d.free, created: d.created ?? null, rel: d.rel ?? null,
+  };
+}
+function applySnapshot(){
+  state.arenaPub = SNAPSHOT.arenaPub || SNAPSHOT.gen || null;
+  state.rows = (SNAPSHOT.rows || []).map(slimToRow);
+}
+
+/* ===== 实时数据 ===== */
+async function loadArena(){
+  const out = {};
+  for (let off = 0; off < 700; off += 100){
+    const url = 'https://datasets-server.huggingface.co/rows?dataset=lmarena-ai%2Fleaderboard-dataset'
+      + `&config=text&split=latest&offset=${off}&length=100`;
+    const res = await fetchTimeout(url, 15000);
+    if (!res.ok) throw new Error('arena http ' + res.status);
+    const d = await res.json();
+    if (d.error) throw new Error('arena: ' + d.error);
+    for (const r of (d.rows || [])){
+      const row = r.row;
+      if (row.category !== 'overall' && row.category !== 'chinese') continue;
+      const a = out[row.model_name] || (out[row.model_name] = {
+        org: row.organization, votes: row.vote_count, pub: row.leaderboard_publish_date, cats: {}
+      });
+      a.cats[row.category] = {rank: row.rank, rating: row.rating,
+        lo: row.rating_lower, hi: row.rating_upper};
+    }
+  }
+  return out;
+}
+function catalogFromOR(list){
+  const catalog = {};
+  for (const m of (list || [])){
+    const mid = m.id || '';
+    const slash = mid.indexOf('/');
+    const vendorRaw = slash > 0 ? mid.slice(0, slash) : 'other';
+    let slug = slash > 0 ? mid.slice(slash + 1) : mid;
+    let variant = null;
+    const ci = slug.indexOf(':');
+    if (ci >= 0){ variant = slug.slice(ci + 1); slug = slug.slice(0, ci); }
+    if (variant && /^(batch|online|floor|search)$/.test(variant)) continue;
+    const vendor = VENDOR_ALIAS[vendorRaw] || 'other';
+    const arch = m.architecture || {};
+    const outs = arch.output_modalities || ['text'];
+    if (!outs.includes('text')) continue;
+    if (variant !== 'free' && BAD_ID.test(slug)) continue;
+    const key = vendor + '|' + norm(slug);
+    const pr = m.pricing || {};
+    let pin = pr.prompt != null ? parseFloat(pr.prompt) * 1e6 : null;
+    let pout = pr.completion != null ? parseFloat(pr.completion) * 1e6 : null;
+    if (!priceOk(pin)) pin = null;
+    if (!priceOk(pout)) pout = null;
+    let e = catalog[key];
+    if (!e){
+      let name = m.name || slug;
+      const c2 = name.indexOf(': ');
+      if (c2 > 0) name = name.slice(c2 + 2);
+      e = catalog[key] = {name: name.trim(), vendor,
+        pin: null, pout: null, ctx: m.context_length ?? null,
+        mout: (m.top_provider || {}).max_completion_tokens ?? null,
+        min: arch.input_modalities || [], created: m.created ?? null,
+        free: false, reason: false, tools: false, ow: null, rel: null};
+      e.vision = e.min.includes('image'); e.audio = e.min.includes('audio');
+      const sp = m.supported_parameters || [];
+      e.reason = sp.includes('reasoning') || sp.includes('include_reasoning');
+      e.tools = sp.includes('tools');
+    }
+    if (variant === 'free'){ e.free = true; continue; }
+    if (priceOk(pin) && (e.pin == null || (m.created || 0) >= (e.created || 0))){
+      e.pin = pin; e.pout = pout;
+    }
+    if (e.pin == null && priceOk(pin)){ e.pin = pin; e.pout = pout; }
+  }
+  return catalog;
+}
+function enrichMD(catalog, mdApi){
+  let added = 0;
+  for (const prov of FIRST_PARTY){
+    const p = mdApi && mdApi[prov];
+    if (!p) continue;
+    const vendor = VENDOR_ALIAS[prov] || 'other';
+    for (const [mid, m] of Object.entries(p.models || {})){
+      if (BAD_ID.test(mid)) continue;
+      const cost = m.cost || {}, lim = m.limit || {};
+      const pin = priceOk(cost.input) ? cost.input : null;
+      const pout = priceOk(cost.output) ? cost.output : null;
+      const key = vendor + '|' + norm(mid);
+      const e = catalog[key];
+      if (e){
+        if (pin != null && e.pin == null) e.pin = pin;
+        if (pout != null && e.pout == null) e.pout = pout;
+        if (lim.context != null && e.ctx == null) e.ctx = lim.context;
+        if (lim.output != null && e.mout == null) e.mout = lim.output;
+        if (m.release_date && !e.rel) e.rel = m.release_date;
+        if (m.open_weights != null && e.ow == null) e.ow = m.open_weights;
+        if (m.reasoning && !e.reason) e.reason = true;
+        if (m.tool_call && !e.tools) e.tools = true;
+      } else {
+        const mods = m.modalities || {};
+        const ne = {name: m.name || mid, vendor,
+          pin, pout, ctx: lim.context ?? null, mout: lim.output ?? null,
+          min: mods.input || [], created: null, free: pin === 0 && pout === 0,
+          rel: m.release_date ?? null, ow: m.open_weights ?? null,
+          reason: !!m.reasoning, tools: !!m.tool_call, src: 'md'};
+        ne.vision = ne.min.includes('image'); ne.audio = ne.min.includes('audio');
+        catalog[key] = ne; added++;
+      }
+    }
+  }
+  return added;
+}
+function mergeLive(arena, orList, mdApi){
+  const catalog = catalogFromOR(orList);
+  enrichMD(catalog, mdApi);
+  const rows = [];
+  const used = new Set();
+  for (const [name, a] of Object.entries(arena)){
+    const org = VENDOR_ALIAS[a.org] || 'arena';
+    const n = norm(name);
+    let e = catalog[org + '|' + n];
+    if (!e){
+      let best = null, bestLen = Infinity;
+      const pref = org + '|';
+      for (const k of Object.keys(catalog)){
+        if (!k.startsWith(pref)) continue;
+        const slug = k.slice(pref.length);
+        if (slug.startsWith(n) || n.startsWith(slug)){
+          const d = Math.abs(slug.length - n.length);
+          if (d < bestLen){ best = k; bestLen = d; }
+        }
+      }
+      if (best) e = catalog[best];
+    }
+    const ov = a.cats.overall || {}, zh = a.cats.chinese || {};
+    let row;
+    if (e){
+      used.add(e);
+      row = {name: e.name, vendor: e.vendor === 'other' ? org : e.vendor,
+        arenaName: name, elo: ov.rating ?? null, eloLo: ov.lo ?? null, eloHi: ov.hi ?? null,
+        rankO: ov.rank ?? null, eloZ: zh.rating ?? null, rankZ: zh.rank ?? null,
+        votes: a.votes ?? null, effort: /-(max|high|medium|low|thinking)$/i.test(name),
+        pin: e.pin, pout: e.pout, ctx: e.ctx, mout: e.mout,
+        vision: e.vision, audio: e.audio, reason: e.reason, tools: e.tools,
+        ow: e.ow, free: e.free, created: e.created, rel: e.rel};
+    } else {
+      const disp = name.replace(/\s*\([^)]*\)/g, '').replace(/[-_]/g, ' ')
+        .split(/\s+/).filter(Boolean)
+        .map(w => /^[a-z]\d[\d.]*$/.test(w) ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)).join(' ');
+      row = {name: disp, vendor: org, arenaName: name,
+        elo: ov.rating ?? null, eloLo: ov.lo ?? null, eloHi: ov.hi ?? null,
+        rankO: ov.rank ?? null, eloZ: zh.rating ?? null, rankZ: zh.rank ?? null,
+        votes: a.votes ?? null, effort: /-(max|high|medium|low|thinking)$/i.test(name),
+        pin: null, pout: null, ctx: null, mout: null,
+        vision: false, audio: false, reason: false, tools: false, ow: false, free: false,
+        created: null, rel: null};
+    }
+    rows.push(row);
+  }
+  for (const e of Object.values(catalog)){
+    if (used.has(e)) continue;
+    rows.push({name: e.name, vendor: e.vendor, arenaName: null,
+      elo: null, eloLo: null, eloHi: null, rankO: null, eloZ: null, rankZ: null,
+      votes: null, effort: false, pin: e.pin, pout: e.pout, ctx: e.ctx, mout: e.mout,
+      vision: e.vision, audio: e.audio, reason: e.reason, tools: e.tools,
+      ow: e.ow, free: e.free, created: e.created, rel: e.rel});
+  }
+  let pub = null;
+  for (const a of Object.values(arena)) if (a.pub && (!pub || a.pub > pub)) pub = a.pub;
+  state.arenaPub = pub;
+  state.rows = rows;
+  state.cmp = state.cmp.filter(k => rows.some(r => rowKey(r) === k));
+}
+
+async function loadOR(){
+  const res = await fetchTimeout('https://openrouter.ai/api/v1/models', 15000);
+  if (!res.ok) throw new Error('or http ' + res.status);
+  const d = await res.json();
+  return d.data;
+}
+async function loadMD(){
+  const res = await fetchTimeout('https://models.dev/api.json', 20000);
+  if (!res.ok) throw new Error('md http ' + res.status);
+  return await res.json();
+}
+
+/* ===== 排行/筛选 ===== */
+function rowKey(r){ return r.arenaName || (r.vendor + '|' + norm(r.name)); }
+function valueScores(rows){
+  const idx = rows.map((r, i) => i).filter(i =>
+    rows[i].elo != null && rows[i].pin != null && rows[i].pin >= 0);
+  const n = idx.length;
+  if (n < 5) { for (const r of rows) r.value = null; return; }
+  const elos = idx.map(i => rows[i].elo).sort((a, b) => a - b);
+  const pins = idx.map(i => rows[i].pin).sort((a, b) => a - b);
+  const pct = (arr, x) => {
+    let lo = 0, hi = arr.length;
+    while (lo < hi){ const mid = (lo + hi) >> 1; if (arr[mid] < x) lo = mid + 1; else hi = mid; }
+    return arr.length <= 1 ? 0 : lo / (arr.length - 1);
+  };
+  for (const r of rows) r.value = null;
+  for (const i of idx){
+    const r = rows[i];
+    r.value = 0.5 * pct(elos, r.elo) + 0.5 * (1 - pct(pins, r.pin));
+  }
+}
+function filtered(){
+  const q = state.q.trim().toLowerCase();
+  const caps = [...state.caps];
+  return state.rows.filter(r => {
+    if (state.vendors.size && !state.vendors.has(r.vendor)) return false;
+    for (const c of caps) if (!r[c]) return false;
+    if (q && !(r.name.toLowerCase().includes(q)
+      || (r.arenaName || '').toLowerCase().includes(q)
+      || (VENDOR_NAME[r.vendor] || '').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function sorted(rows){
+  const s = state.sort;
+  const cmpNum = (get) => (a, b) => {
+    const va = get(a), vb = get(b);
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    return vb - va;
+  };
+  const fns = {
+    elo: [cmpNum(r => r.elo), cmpNum(r => r.votes || 0)],
+    eloZ: [cmpNum(r => r.eloZ), cmpNum(r => r.elo || 0)],
+    value: [cmpNum(r => r.value), cmpNum(r => r.elo || 0)],
+    price: [(a, b) => {
+      const va = a.pin, vb = b.pin;
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      return va - vb;
+    }, cmpNum(r => r.elo || 0)],
+    ctx: [cmpNum(r => r.ctx), cmpNum(r => r.elo || 0)],
+    new: [cmpNum(r => Math.max(r.created || 0, r.rel ? Date.parse(r.rel + '-01') / 1000 || 0 : 0)),
+          cmpNum(r => r.elo || 0)],
+  };
+  const [p, sec] = fns[s] || fns.elo;
+  return [...rows].sort((a, b) => p(a, b) || sec(a, b) || (a.name || '').localeCompare(b.name || ''));
+}
+
+/* ===== 渲染 ===== */
+function vendorList(){
+  const cnt = {};
+  for (const r of state.rows) cnt[r.vendor] = (cnt[r.vendor] || 0) + 1;
+  return Object.entries(cnt).filter(([v]) => v !== 'arena' && v !== 'other')
+    .sort((a, b) => b[1] - a[1]).slice(0, 10).map(([v]) => v);
+}
+function renderVendorChips(){
+  const box = $('vendorChips');
+  const cur = new Set(state.vendors);
+  box.innerHTML = '';
+  for (const v of vendorList()){
+    const el = document.createElement('span');
+    el.className = 'chip' + (cur.has(v) ? ' on' : '');
+    el.textContent = VENDOR_NAME[v] || v;
+    el.dataset.vendor = v;
+    el.onclick = () => { cur.has(v) ? cur.delete(v) : cur.add(v); state.vendors = new Set(cur); renderVendorChips(); renderTable(); };
+    box.appendChild(el);
+  }
+}
+function tagsHtml(r){
+  const t = [];
+  if (r.effort) t.push(['effort', t2('effTag')]);
+  if (r.free) t.push(['free', t2('capF')]);
+  if (r.ow) t.push(['ow', t2('capO')]);
+  if (r.vision) t.push(['', t2('capV')]);
+  if (r.reason) t.push(['', t2('capR')]);
+  if (r.tools) t.push(['', t2('capT')]);
+  return t.slice(0, 4).map(([cls, txt]) =>
+    `<span class="tag ${cls}">${txt}</span>`).join('');
+}
+function renderTable(){
+  valueScores(state.rows);
+  const rows = sorted(filtered());
+  const total = rows.length;
+  const shown = rows.slice(0, state.limit);
+  const tb = $('tbody');
+  const keySet = new Set(state.cmp);
+  let html = '';
+  shown.forEach((r, i) => {
+    const k = rowKey(r);
+    const sel = keySet.has(k);
+    const medal = !r.__na && i < 3 ? `<span class="medal m${i + 1}">${i + 1}</span>` : String(i + 1);
+    const elo = fmtElo(r.elo);
+    const eloZ = fmtElo(r.eloZ);
+    const ci = r.elo != null && r.eloHi != null && r.eloLo != null
+      ? `<span class="ci">±${((r.eloHi - r.eloLo) / 2).toFixed(1)}</span>` : '';
+    html += `<tr data-key="${esc(k)}" class="${sel ? 'sel' : ''}">
+<td class="rk">${medal}</td>
+<td><span class="mname">${esc(r.name)}${tagsHtml(r)}</span>
+<span class="mven">${esc(VENDOR_NAME[r.vendor] || r.vendor)}</span></td>
+<td class="num"><span class="elo">${elo ?? '<span class="na">—</span>'}</span>${ci}</td>
+<td class="num hide-m">${eloZ ? '<span class="elo">' + eloZ + '</span>' : '<span class="na">—</span>'}</td>
+<td class="num">${fmtPrice(r.pin) ?? '<span class="na">—</span>'}</td>
+<td class="num hide-m">${fmtPrice(r.pout) ?? '<span class="na">—</span>'}</td>
+<td class="num">${fmtCtx(r.ctx) ?? '<span class="na">—</span>'}</td>
+<td class="num hide-m">${esc(fmtRel(r.rel ?? r.created) ?? '—')}</td>
+</tr>`;
+  });
+  tb.innerHTML = html || `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px">…</td></tr>`;
+  for (const tr of tb.querySelectorAll('tr[data-key]')){
+    tr.onclick = () => toggleCmp(tr.dataset.key);
+  }
+  $('btnMore').hidden = total <= state.limit;
+  const shownN = state.limit === Infinity ? total : Math.min(state.limit, total);
+  $('btnMore').textContent = `${t2('more')}（${shownN} / ${total}）`;
+  $('count').textContent = `${t2('shown')} ${shown.length} ${t2('of')} ${total} ${t2('models')}`;
+  renderHero();
+}
+function renderHero(){
+  $('statModels').textContent = String(state.rows.length);
+  const vs = new Set(state.rows.map(r => r.vendor).filter(v => v !== 'arena' && v !== 'other'));
+  $('statVendors').textContent = String(vs.size);
+  $('statUpdated').textContent = state.arenaPub ? String(state.arenaPub).slice(0, 10) : '—';
+}
+function setBadge(id, st){
+  const el = $(id);
+  el.classList.remove('live', 'cache', 'snap');
+  el.classList.add(st);
+}
+
+/* ===== 对比 ===== */
+function toggleCmp(k){
+  const i = state.cmp.indexOf(k);
+  if (i >= 0) state.cmp.splice(i, 1);
+  else {
+    if (state.cmp.length >= 4){ flash(t2('cmpMax')); return; }
+    state.cmp.push(k);
+  }
+  renderCmpBar();
+  renderTable();
+}
+function byKey(k){ return state.rows.find(r => rowKey(r) === k); }
+function renderCmpBar(){
+  const bar = $('cmpbar');
+  bar.classList.toggle('show', state.cmp.length > 0);
+  $('cmpchips').innerHTML = state.cmp.map(k => {
+    const r = byKey(k);
+    return `<span class="cmpchip">${esc(r ? r.name : k)}<button data-k="${esc(k)}" aria-label="remove">✕</button></span>`;
+  }).join('');
+  for (const b of $('cmpchips').querySelectorAll('button')) b.onclick = () => toggleCmp(b.dataset.k);
+}
+function flash(msg){
+  const bar = $('cmpbar');
+  const inr = bar.querySelector('.in');
+  inr.style.borderColor = 'var(--bad)';
+  setTimeout(() => inr.style.borderColor = '', 800);
+}
+function cmpRow(label, cells){
+  return `<tr><th>${esc(label)}</th>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+}
+function openCompare(){
+  const rs = state.cmp.map(byKey).filter(Boolean);
+  if (rs.length < 2) return;
+  const maxElo = Math.max(...rs.map(r => r.elo || 0), 1);
+  const hdr = cmpRow(t2('fieldModel'),
+    rs.map(r => `<span class="cname">${esc(r.name)}</span><span class="cven">${esc(VENDOR_NAME[r.vendor] || r.vendor)}</span>`));
+  const barFor = v => v == null ? t2('cmpEmpty')
+    : `<b>${Math.round(v)}</b><span class="bar"><i style="width:${Math.round(v / maxElo * 100)}%"></i></span>`;
+  const rows = [
+    cmpRow(t2('fieldElo'), rs.map(r => barFor(r.elo))),
+    cmpRow(t2('fieldEloZ'), rs.map(r => r.eloZ != null ? `<b>${Math.round(r.eloZ)}</b>` : t2('cmpEmpty'))),
+    cmpRow(t2('fieldPin'), rs.map(r => r.pin != null ? '$' + fmtPrice(r.pin) : t2('cmpEmpty'))),
+    cmpRow(t2('fieldPout'), rs.map(r => r.pout != null ? '$' + fmtPrice(r.pout) : t2('cmpEmpty'))),
+    cmpRow(t2('fieldCtx'), rs.map(r => fmtCtx(r.ctx) ?? t2('cmpEmpty'))),
+    cmpRow(t2('fieldMout'), rs.map(r => fmtCtx(r.mout) ?? t2('cmpEmpty'))),
+    cmpRow(t2('fieldMod'), rs.map(r => {
+      const m = [];
+      if (r.vision) m.push(t2('capV')); if (r.audio) m.push('Audio');
+      return m.length ? m.join(' + ') : 'Text';
+    })),
+    cmpRow(t2('fieldCap'), rs.map(r => {
+      const m = [];
+      if (r.reason) m.push(t2('capR')); if (r.tools) m.push(t2('capT'));
+      if (r.ow) m.push(t2('capO')); if (r.free) m.push(t2('capF'));
+      return m.length ? m.join(' · ') : '—';
+    })),
+    cmpRow(t2('fieldRel'), rs.map(r => esc(fmtRel(r.rel ?? r.created) ?? '—'))),
+    cmpRow(t2('fieldVotes'), rs.map(r => r.votes != null ? Number(r.votes).toLocaleString() : '—')),
+  ];
+  $('cmpbody').innerHTML = `<table class="ctable">${hdr}${rows.join('')}</table>`;
+  $('modal').classList.add('show');
+}
+
+/* ===== i18n / 主题 ===== */
+let LANG = 'zh';
+function t2(k){ return (I18N[LANG] && I18N[LANG][k]) || I18N.zh[k] || k; }
+function applyLang(lang, persist){
+  LANG = lang === 'en' ? 'en' : 'zh';
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+  document.title = LANG === 'en' ? I18N.en.titleZh : I18N.zh.titleZh;
+  for (const el of document.querySelectorAll('[data-i18n]')){
+    const v = t2(el.dataset.i18n);
+    if (v != null) el.textContent = v;
+  }
+  for (const el of document.querySelectorAll('[data-i18n-ph]')){
+    el.placeholder = t2(el.dataset.i18nPh);
+  }
+  $('btnLang').textContent = LANG === 'zh' ? 'EN' : '中文';
+  if (persist){
+    store.set('airankLang', LANG);
+    const u = new URL(location.href);
+    if (LANG === 'en') u.searchParams.set('lang', 'en');
+    else u.searchParams.delete('lang');
+    history.replaceState(null, '', u);
+  }
+  renderVendorChips(); renderTable(); renderCmpBar();
+}
+function initTheme(){
+  const saved = store.get('airankTheme');
+  const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+function applySnapshotMeta(){
+  setBadge('st-arena', state.src.arena);
+  setBadge('st-or', state.src.or);
+  setBadge('st-md', state.src.md);
+  const allSnap = state.liveTried && Object.values(state.src).every(s => s === 'snap');
+  $('banner').classList.toggle('show', allSnap);
+}
+
+/* ===== 缓存与启动 ===== */
+const CACHE_KEY = 'airankCacheV1';
+function saveCache(){
+  const slim = state.rows.map(r => {
+    const d = {};
+    for (const k of ['name','vendor','arenaName','elo','eloLo','eloHi','rankO','eloZ','rankZ',
+      'votes','effort','pin','pout','ctx','mout','vision','audio','reason','tools','ow','free','created','rel'])
+      if (r[k]) d[k] = r[k];
+    return d;
+  });
+  store.set(CACHE_KEY, JSON.stringify({t: Date.now(), pub: state.arenaPub, rows: slim}));
+}
+function tryCache(){
+  try {
+    const c = JSON.parse(store.get(CACHE_KEY) || 'null');
+    if (!c || !c.rows || !c.rows.length) return false;
+    const age = Date.now() - Number(c.t);
+    if (age > 36 * 3600 * 1000) return false;
+    state.rows = c.rows.map(slimToRow);
+    state.arenaPub = c.pub;
+    state.src = {arena: 'cache', or: 'cache', md: 'cache'};
+    applySnapshotMeta(); renderTable(); renderVendorChips();
+    return true;
+  } catch(e){ return false; }
+}
+async function boot(){
+  applySnapshot(); applySnapshotMeta(); renderVendorChips(); renderTable();
+  tryCache();
+  const btn = $('btnRefresh');
+  const run = async () => {
+    btn.classList.add('spin');
+    const [a, o, m] = await Promise.allSettled([loadArena(), loadOR(), loadMD()]);
+    if (a.status === 'fulfilled' || o.status === 'fulfilled' || m.status === 'fulfilled'){
+      const arena = a.status === 'fulfilled' ? a.value : null;
+      const orList = o.status === 'fulfilled' ? o.value : null;
+      const mdApi = m.status === 'fulfilled' ? m.value : null;
+      const tmp = {rows: state.rows, arenaPub: state.arenaPub};
+      mergeLive(arena, orList, mdApi);
+      if (!state.rows.length) { state.rows = tmp.rows; state.arenaPub = tmp.arenaPub; }
+      state.src.arena = a.status === 'fulfilled' ? 'live' : 'snap';
+      state.src.or = o.status === 'fulfilled' ? 'live' : 'snap';
+      state.src.md = m.status === 'fulfilled' ? 'live' : 'snap';
+      applySnapshotMeta(); renderVendorChips(); renderTable();
+      if (state.src.arena === 'live' && state.src.or === 'live') saveCache();
+    }
+    state.liveTried = true;
+    applySnapshotMeta();
+    btn.classList.remove('spin');
+  };
+  await run();
+  btn.onclick = run;
+}
+/* ===== 事件绑定 ===== */
+initTheme();
+(() => {
+  const url = new URL(location.href);
+  const qp = url.searchParams.get('lang');
+  const saved = store.get('airankLang');
+  const browser = (navigator.language || 'zh').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  LANG = qp ? (qp === 'en' ? 'en' : 'zh') : (saved || browser);
+})();
+$('btnLang').onclick = () => applyLang(LANG === 'zh' ? 'en' : 'zh', true);
+$('btnTheme').onclick = () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  store.set('airankTheme', dark ? 'light' : 'dark');
+};
+for (const tab of document.querySelectorAll('.tab')){
+  tab.onclick = () => {
+    for (const t2el of document.querySelectorAll('.tab')) t2el.classList.remove('on');
+    tab.classList.add('on');
+    state.sort = tab.dataset.sort;
+    state.limit = 100;
+    renderTable();
+  };
+}
+for (const chip of document.querySelectorAll('.chip.cap')){
+  chip.onclick = () => {
+    const c = chip.dataset.cap;
+    if (state.caps.has(c)) state.caps.delete(c); else state.caps.add(c);
+    chip.classList.toggle('on');
+    renderTable();
+  };
+}
+$('q').addEventListener('input', e => {
+  state.q = e.target.value;
+  state.limit = 100;
+  renderTable();
+});
+$('btnMore').onclick = () => { state.limit = Infinity; renderTable(); };
+$('cmpgo').onclick = openCompare;
+$('modalClose').onclick = () => $('modal').classList.remove('show');
+$('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('show'); });
+applyLang(LANG, false);
+window.__airank = { state, renderTable, filtered };  // debug hook
+boot();
+</script>
+</body>
+</html>
