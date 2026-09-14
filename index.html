@@ -27,7 +27,8 @@
 {"@type":"Question","name":"这个大模型排行榜的数据来源是什么？","acceptedAnswer":{"@type":"Answer","text":"智能评分来自 LMArena（大模型竞技场）官方公开数据集，基于真实用户盲测投票的 Elo 评分；API 价格与上下文窗口来自 OpenRouter 与 models.dev 的实时接口。"}},
 {"@type":"Question","name":"排行榜多久更新一次？","acceptedAnswer":{"@type":"Answer","text":"每次打开页面都会实时拉取最新数据，LMArena 评分通常每天更新，价格随 API 市场变化即时同步。网络不可用时自动降级为内置快照数据。"}},
 {"@type":"Question","name":"性价比排行榜是怎么计算的？","acceptedAnswer":{"@type":"Answer","text":"性价比 = 50% 智能分位 + 50% 低价分位，即在全部可比模型中同时衡量 Arena 评分排名与输入价格排名，越高代表越便宜且越聪明。"}},
-{"@type":"Question","name":"使用这个网站需要付费或注册吗？","acceptedAnswer":{"@type":"Answer","text":"完全免费，无需注册。页面为纯前端实现，不收集任何个人数据，模型选择和对比均在本地完成。"}}]}
+{"@type":"Question","name":"使用这个网站需要付费或注册吗？","acceptedAnswer":{"@type":"Answer","text":"完全免费，无需注册。页面为纯前端实现，不收集任何个人数据，模型选择和对比均在本地完成。"}},
+{"@type":"Question","name":"为什么 GPT-6 的 Arena 分数比 GPT-5.5 低？","acceptedAnswer":{"@type":"Answer","text":"LMArena Elo 衡量盲测中的人类偏好而非绝对能力。新模型对战样本少、评分尚未收敛（置信区间更宽），常被暂时低估；回答风格与详略也会影响投票。随票数累积，评分会逐渐稳定到真实水平。"}}]}
 </script>
 <style>
 :root{
@@ -128,6 +129,17 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
 .cven{color:var(--muted);font-weight:400;font-size:12px;display:block}
 .bar{height:6px;border-radius:99px;background:var(--chip);margin-top:4px;min-width:80px}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6366f1,#a855f7)}
+.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin:6px 0 4px;overflow:hidden}
+.guide-head{display:flex;gap:10px;align-items:baseline;padding:13px 16px;cursor:pointer;flex-wrap:wrap}
+.guide-head:hover{background:var(--accent-soft)}
+.guide-head b{font-size:15px;white-space:nowrap}
+.guide-sub{color:var(--muted);font-size:13px;flex:1;min-width:260px}
+.guide-arrow{color:var(--accent);font-size:12.5px;white-space:nowrap}
+.guide-body{border-top:1px solid var(--line);padding:4px 18px 16px;display:none}
+.guide-body.open{display:block}
+.guide-body h3{font-size:14px;margin:15px 0 4px}
+.guide-body p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.8}
+.tag.settle{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn);cursor:help}
 @media (max-width:760px){
   .hero h1{font-size:23px}
   .hide-m{display:none}
@@ -161,6 +173,28 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
       <span class="stat"><b id="statUpdated">—</b><span data-i18n="statUpdated">榜单日期</span></span>
     </div>
     <div class="banner" id="banner" data-i18n="banner">实时数据暂时不可用，当前显示内置快照数据。</div>
+  </section>
+
+  <section class="guide" aria-label="ranking methodology">
+    <div class="guide-head" id="guideHead" role="button" tabindex="0" aria-expanded="false">
+      <b data-i18n="guideTitle">📖 排名是怎么来的？</b>
+      <span class="guide-sub" data-i18n="guideSub">评分来自 LMArena 全球盲测投票的 Elo 等级分——衡量"人类偏好"而非考试分数。新模型投票少、评分仍在收敛，可能暂时低于旧款旗舰（例如 GPT-6 与 GPT-5.5）。</span>
+      <span class="guide-arrow" id="guideArrow">▾ 展开说明</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <h3 data-i18n="g1t">LMArena 是什么？</h3>
+      <p data-i18n="g1">LMArena（大模型竞技场，源自 UC Berkeley 的 Chatbot Arena 项目）是全球最大的 AI 模型盲测平台：任何用户提一个问题，两个匿名模型各给出回答，用户投票选出更好的那个——因为不知道回答来自哪家模型，投票天然公平。LMArena 官方定期把投票汇总为 Elo 评分公开发布，本站的智能榜与中文榜就来自它的官方公开数据集。</p>
+      <h3 data-i18n="g2t">Elo 分数怎么读？</h3>
+      <p data-i18n="g2">Elo 是相对等级分（与国际象棋同源），只表示"被用户偏好的概率"，不是能力考试分数。例如 1400 对 1380 的含义是：盲测中前者约以 53% 的概率被偏好。分数后的 ±X 是 95% 置信区间——越小代表票数越多、排名越稳；比较两个模型时，区间重叠越大，名次差异越不可靠。</p>
+      <h3 data-i18n="g3t">为什么 GPT-6 的分数比 GPT-5.5 还低？</h3>
+      <p data-i18n="g3">三个常见原因：① 样本少、评分未收敛——新模型参评对战少，Elo 需要足够投票才能稳定（表现为置信区间明显更宽），随票数增加分数会逐渐逼近真实水平；② 人类偏好 ≠ 能力——回答的风格、详略、格式都会影响盲测投票，这与跑分测试的能力排名可能不一致；③ 档位差异——同一模型的不同推理强度变体（如"高推理档"）在 Arena 独立参评，对比时请选择同一档位。</p>
+      <h3 data-i18n="g4t">六个榜单分别按什么排？</h3>
+      <p data-i18n="g4">智能榜：LMArena 综合类目（overall）Elo 降序。中文榜：LMArena 中文类目 Elo 降序，反映中文真实对话中的偏好。性价比：50% 智能分位 + 50% 低价分位，同时奖励聪明与便宜（仅统计有评分且有价格的模型）。低价：输入价格升序。长上下文：上下文窗口降序。最新发布：发布时间降序。</p>
+      <h3 data-i18n="g5t">价格、上下文与标签</h3>
+      <p data-i18n="g5">价格为各厂商官方 API 定价（美元 / 每百万 token），上下文为最大输入窗口，均来自 OpenRouter 与 models.dev 实时接口；"—"表示暂无公开数据。标签含义：高推理档 = 高推理强度变体；视觉 = 支持图片输入；推理 = 支持推理/思考模式；工具 = 支持函数调用；开源权重 = 权重公开可自部署；免费档 = 存在 $0 免费变体；评分收敛中 = 该模型 Arena 投票还少，分数仅供参考。</p>
+      <h3 data-i18n="g6t">更新与免责</h3>
+      <p data-i18n="g6">每次打开页面都会实时拉取最新数据：Arena 评分通常每日更新，价格随官方调整即时变化。榜单反映盲测偏好，选型时请结合自己的任务实测；本站免费、无登录、不收集任何个人数据。</p>
+    </div>
   </section>
 
   <nav class="tabs" id="tabs" aria-label="ranking dimension">
@@ -221,6 +255,10 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
     <details>
       <summary data-i18n="faq4q">网站免费吗？会收集我的数据吗？</summary>
       <p data-i18n="faq4a">完全免费、无需注册。页面为纯前端实现，不收集任何个人数据；你的筛选、对比与语言偏好只保存在本地浏览器。</p>
+    </details>
+    <details>
+      <summary data-i18n="faq5q">为什么 GPT-6 的分数比 GPT-5.5 还低？</summary>
+      <p data-i18n="faq5a">Arena 评分衡量的是盲测中的人类偏好，而非绝对能力。新模型投票样本少、Elo 仍在收敛（置信区间明显更宽），常被暂时低估；回答风格与详略也会影响投票。通常随票数增加，新模型的评分会逐渐稳定到真实水平。</p>
     </details>
   </section>
 
@@ -284,6 +322,26 @@ const I18N = {
     capV:'视觉', capR:'推理', capT:'工具', capO:'开源权重', capF:'免费档', capE:'高推理档',
     titleZh:'AI 大模型排行榜 - 实时对比 Arena 评分、价格与上下文窗口 | AI Rank',
     updatedAt:'更新', effTag:'高推理档', arenaOnly:'仅榜内',
+    guideTitle:'📖 排名是怎么来的？',
+    guideSub:'评分来自 LMArena 全球盲测投票的 Elo 等级分——衡量"人类偏好"而非考试分数。新模型投票少、评分仍在收敛，可能暂时低于旧款旗舰（例如 GPT-6 与 GPT-5.5）。',
+    guideMore:'展开说明', guideHide:'收起',
+    g1t:'LMArena 是什么？',
+    g1:'LMArena（大模型竞技场，源自 UC Berkeley 的 Chatbot Arena 项目）是全球最大的 AI 模型盲测平台：任何用户提一个问题，两个匿名模型各给出回答，用户投票选出更好的那个——因为不知道回答来自哪家模型，投票天然公平。LMArena 官方定期把投票汇总为 Elo 评分公开发布，本站的智能榜与中文榜就来自它的官方公开数据集。',
+    g2t:'Elo 分数怎么读？',
+    g2:'Elo 是相对等级分（与国际象棋同源），只表示"被用户偏好的概率"，不是能力考试分数。例如 1400 对 1380 的含义是：盲测中前者约以 53% 的概率被偏好。分数后的 ±X 是 95% 置信区间——越小代表票数越多、排名越稳；比较两个模型时，区间重叠越大，名次差异越不可靠。',
+    g3t:'为什么 GPT-6 的分数比 GPT-5.5 还低？',
+    g3:'三个常见原因：① 样本少、评分未收敛——新模型参评对战少，Elo 需要足够投票才能稳定（表现为置信区间明显更宽），随票数增加分数会逐渐逼近真实水平；② 人类偏好 ≠ 能力——回答的风格、详略、格式都会影响盲测投票，这与跑分测试的能力排名可能不一致；③ 档位差异——同一模型的不同推理强度变体（如"高推理档"）在 Arena 独立参评，对比时请选择同一档位。',
+    g4t:'六个榜单分别按什么排？',
+    g4:'智能榜：LMArena 综合类目（overall）Elo 降序。中文榜：LMArena 中文类目 Elo 降序，反映中文真实对话中的偏好。性价比：50% 智能分位 + 50% 低价分位，同时奖励聪明与便宜（仅统计有评分且有价格的模型）。低价：输入价格升序。长上下文：上下文窗口降序。最新发布：发布时间降序。',
+    g5t:'价格、上下文与标签',
+    g5:'价格为各厂商官方 API 定价（美元 / 每百万 token），上下文为最大输入窗口，均来自 OpenRouter 与 models.dev 实时接口；"—"表示暂无公开数据。标签含义：高推理档 = 高推理强度变体；视觉 = 支持图片输入；推理 = 支持推理/思考模式；工具 = 支持函数调用；开源权重 = 权重公开可自部署；免费档 = 存在 $0 免费变体；评分收敛中 = 该模型 Arena 投票还少，分数仅供参考。',
+    g6t:'更新与免责',
+    g6:'每次打开页面都会实时拉取最新数据：Arena 评分通常每日更新，价格随官方调整即时变化。榜单反映盲测偏好，选型时请结合自己的任务实测；本站免费、无登录、不收集任何个人数据。',
+    settling:'评分收敛中',
+    settlingTip:'该模型在 LMArena 的投票还较少，Elo 评分仍在收敛期，可能暂时低估其真实水平。',
+    eloTip:'LMArena Elo 相对等级分（盲测投票），±X 为 95% 置信区间，越小越可信',
+    faq5q:'为什么 GPT-6 的分数比 GPT-5.5 还低？',
+    faq5a:'Arena 评分衡量的是盲测中的人类偏好，而非绝对能力。新模型投票样本少、Elo 仍在收敛（置信区间明显更宽），常被暂时低估；回答风格与详略也会影响投票。通常随票数增加，新模型的评分会逐渐稳定到真实水平。',
   },
   en: {
     brand:'AI Rank · Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
@@ -314,6 +372,26 @@ const I18N = {
     capV:'vision', capR:'reasoning', capT:'tools', capO:'open weights', capF:'free tier', capE:'high-effort variant',
     titleZh:'AI Model Leaderboard - Live Arena Scores, Pricing & Context | AI Rank',
     updatedAt:'updated', effTag:'high-effort', arenaOnly:'leaderboard only',
+    guideTitle:'📖 How do the rankings work?',
+    guideSub:'Scores are chess-style Elo ratings aggregated from LMArena\'s global blind votes — they measure human preference, not exam results. Newly added models have few votes and unconverged ratings, so they can sit temporarily below older flagships (e.g., GPT-6 vs GPT-5.5).',
+    guideMore:'Read more', guideHide:'Collapse',
+    g1t:'What is LMArena?',
+    g1:'LMArena (born from UC Berkeley\'s Chatbot Arena project) is the world\'s largest blind-testing platform for AI models: any user types a question, two anonymous models answer, and the user votes for the better reply — since the source is hidden, votes are naturally fair. LMArena periodically aggregates votes into Elo ratings and publishes them; this site\'s Intelligence and Chinese boards come straight from its official public dataset.',
+    g2t:'How to read an Elo score?',
+    g2:'Elo is a relative rating (same family as chess) expressing only "probability of being preferred" — not an exam score. 1400 vs 1380 means the former wins the blind vote about 53% of the time. The ±X after a score is the 95% confidence interval — smaller means more votes and a steadier ranking; the more two intervals overlap, the less reliable the order.',
+    g3t:'Why does GPT-6 score below GPT-5.5?',
+    g3:'Three common reasons: ① Few battles, unconverged rating — new models have limited matches and Elo needs enough votes to stabilize (a visibly wider confidence interval is the tell); scores approach true strength as votes accumulate. ② Human preference ≠ capability — answer style, length and formatting all sway blind votes, so rankings can differ from benchmarks. ③ Tier mismatch — reasoning-effort variants (like "high-effort") compete separately on Arena; compare within the same tier.',
+    g4t:'What does each board rank by?',
+    g4:'Intelligence: LMArena overall-category Elo, descending. Chinese: LMArena Chinese-category Elo, descending — preferences in real Chinese conversations. Value: 50% intelligence percentile + 50% cheapness percentile, rewarding models that are both smart and affordable (only models with both a score and a price). Cheapest: input price ascending. Long context: context window descending. Newest: release date descending.',
+    g5t:'Pricing, context and tags',
+    g5:'Prices are official vendor API rates (USD per 1M tokens); context is the maximum input window — both from live OpenRouter and models.dev APIs; "—" means no public data. Tags: high-effort = high reasoning-effort variant; vision = image input; reasoning = reasoning/thinking mode; tools = function calling; open weights = self-hostable; free tier = a $0 variant exists; settling = few Arena votes so far — score is provisional.',
+    g6t:'Updates & disclaimer',
+    g6:'Latest data is fetched on every page load: Arena scores update roughly daily, prices track official changes immediately. The boards reflect blind-test preference — always test models on your own tasks; this site is free, requires no sign-up and collects no personal data.',
+    settling:'settling',
+    settlingTip:'Few Arena votes so far — the Elo rating is still converging and may temporarily undersell this model.',
+    eloTip:'LMArena Elo relative rating from blind votes; ±X is the 95% confidence interval — smaller is more reliable',
+    faq5q:'Why does GPT-6 score below GPT-5.5?',
+    faq5a:'Arena scores measure human preference in blind tests, not absolute capability. New models have few votes and still-converging Elo (visibly wider confidence intervals), so they are often temporarily underrated; answer style and length also sway votes. Scores usually stabilize toward true strength as votes accumulate.',
   }
 };
 
@@ -679,13 +757,14 @@ function renderVendorChips(){
 function tagsHtml(r){
   const t = [];
   if (r.effort) t.push(['effort', t2('effTag')]);
+  if (r.votes != null && r.votes < 10000) t.push(['settle', t2('settling'), t2('settlingTip')]);
   if (r.free) t.push(['free', t2('capF')]);
   if (r.ow) t.push(['ow', t2('capO')]);
   if (r.vision) t.push(['', t2('capV')]);
   if (r.reason) t.push(['', t2('capR')]);
   if (r.tools) t.push(['', t2('capT')]);
-  return t.slice(0, 4).map(([cls, txt]) =>
-    `<span class="tag ${cls}">${txt}</span>`).join('');
+  return t.slice(0, 5).map(([cls, txt, tip]) =>
+    `<span class="tag ${cls}"${tip ? ` title="${esc(tip)}"` : ''}>${txt}</span>`).join('');
 }
 function renderTable(){
   valueScores(state.rows);
@@ -707,7 +786,7 @@ function renderTable(){
 <td class="rk">${medal}</td>
 <td><span class="mname">${esc(r.name)}${tagsHtml(r)}</span>
 <span class="mven">${esc(VENDOR_NAME[r.vendor] || r.vendor)}</span></td>
-<td class="num"><span class="elo">${elo ?? '<span class="na">—</span>'}</span>${ci}</td>
+<td class="num"><span class="elo" title="${t2('eloTip')}">${elo ?? '<span class="na">—</span>'}</span>${ci}</td>
 <td class="num hide-m">${eloZ ? '<span class="elo">' + eloZ + '</span>' : '<span class="na">—</span>'}</td>
 <td class="num">${fmtPrice(r.pin) ?? '<span class="na">—</span>'}</td>
 <td class="num hide-m">${fmtPrice(r.pout) ?? '<span class="na">—</span>'}</td>
@@ -822,7 +901,7 @@ function applyLang(lang, persist){
     else u.searchParams.delete('lang');
     history.replaceState(null, '', u);
   }
-  renderVendorChips(); renderTable(); renderCmpBar();
+  renderVendorChips(); renderTable(); renderCmpBar(); renderGuide();
 }
 function initTheme(){
   const saved = store.get('airankTheme');
@@ -954,6 +1033,19 @@ $('btnMore').onclick = () => { state.limit = Infinity; renderTable(); };
 $('cmpgo').onclick = openCompare;
 $('modalClose').onclick = () => $('modal').classList.remove('show');
 $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('show'); });
+/* ===== 排名说明：首次访问自动展开，手动收起后记住 ===== */
+function renderGuide(){
+  const open = $('guideBody').classList.contains('open');
+  $('guideArrow').textContent = open ? `▴ ${t2('guideHide')}` : `▾ ${t2('guideMore')}`;
+  $('guideHead').setAttribute('aria-expanded', String(open));
+}
+$('guideHead').onclick = () => {
+  const open = $('guideBody').classList.toggle('open');
+  if (!open) store.set('airankGuideSeen', '1');
+  renderGuide();
+};
+$('guideHead').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('guideHead').onclick(); } };
+if (!store.get('airankGuideSeen')) $('guideBody').classList.add('open');
 const explicitLang = langFromUrlOrStore();
 LANG = explicitLang || heuristicLang();
 applyLang(LANG, false);
