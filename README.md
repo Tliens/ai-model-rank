@@ -17,3 +17,8 @@
 
 ## 本地运行
 直接双击 `index.html`，或 `python3 -m http.server 8747` 后访问 http://localhost:8747。
+
+## 数据管道
+GitHub Action（`update-data.yml`）每天 03:13 UTC 运行 `scripts/update-data.mjs`，拉取三个数据源合并为 `data.json` 并自动提交；页面打开时优先加载它（蓝色徽标），再后台拉实时接口刷新（绿色徽标）。任一数据源失败脚本即失败，保留上一天数据。
+
+语言策略：默认英文，中国大陆 IP 自动中文；`?lang=zh` / `?lang=en` 可强制指定。支持 URL 状态分享（`?sort=&q=&v=&c=&cmp=`）。

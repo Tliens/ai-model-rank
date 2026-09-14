@@ -116,6 +116,15 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
 .cmpchip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:8px;padding:4px 10px;font-size:13px}
 .cmpchip button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
 .cmpgo{background:var(--accent);border:none;color:#fff;border-radius:9px;padding:8px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.cmpshare{background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:8px 14px;font-size:13.5px;cursor:pointer}
+.cmpshare:hover{border-color:var(--accent)}
+.calc{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.calc-title{font-weight:700;font-size:14px;margin-bottom:8px}
+.calc-inputs{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.calc-inputs label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.calc-inputs input{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px;width:180px}
+.calc-row{display:grid;grid-template-columns:minmax(110px,1fr) auto minmax(80px,2fr);gap:10px;align-items:center;padding:5px 0;font-size:13.5px}
+.calc-row .bar{min-width:60px}
 .modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
 .modal.show{display:flex}
 .modal .box{background:var(--card);border-radius:16px;max-width:860px;width:100%;max-height:88vh;overflow:auto;padding:20px}
@@ -172,7 +181,7 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
       <span class="stat"><b id="statVendors">—</b><span data-i18n="statVendors">家厂商</span></span>
       <span class="stat"><b id="statUpdated">—</b><span data-i18n="statUpdated">榜单日期</span></span>
     </div>
-    <div class="banner" id="banner" data-i18n="banner">实时数据暂时不可用，当前显示内置快照数据。</div>
+    <div class="banner" id="banner">实时数据暂时不可用，当前显示内置快照数据。</div>
   </section>
 
   <section class="guide" aria-label="ranking methodology">
@@ -272,6 +281,7 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
   <div class="in">
     <span style="font-size:13px;color:var(--muted)" data-i18n="cmpSel">已选：</span>
     <span id="cmpchips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+    <button class="cmpshare" id="cmpShare">🔗 <span data-i18n="share">分享</span></button>
     <button class="cmpgo" id="cmpgo" data-i18n="cmpGo">开始对比</button>
   </div>
 </div>
@@ -282,6 +292,14 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
     <h3 data-i18n="cmpTitle">模型对比</h3>
     <div style="font-size:13px;color:var(--muted)" data-i18n="cmpSub">价格单位：美元 / 每百万 token；评分为 LMArena Elo。</div>
     <div id="cmpbody"></div>
+    <div class="calc">
+      <div class="calc-title" data-i18n="calcTitle">💵 月成本估算</div>
+      <div class="calc-inputs">
+        <label><span data-i18n="calcIn">每月输入 tokens</span><input id="calcIn" type="number" min="0" step="any" value="1000000" inputmode="numeric"></label>
+        <label><span data-i18n="calcOut">每月输出 tokens</span><input id="calcOut" type="number" min="0" step="any" value="300000" inputmode="numeric"></label>
+      </div>
+      <div id="calcRows"></div>
+    </div>
   </div>
 </div>
 
@@ -342,6 +360,9 @@ const I18N = {
     eloTip:'LMArena Elo 相对等级分（盲测投票），±X 为 95% 置信区间，越小越可信',
     faq5q:'为什么 GPT-6 的分数比 GPT-5.5 还低？',
     faq5a:'Arena 评分衡量的是盲测中的人类偏好，而非绝对能力。新模型投票样本少、Elo 仍在收敛（置信区间明显更宽），常被暂时低估；回答风格与详略也会影响投票。通常随票数增加，新模型的评分会逐渐稳定到真实水平。',
+    bannerSnap:'实时数据暂时不可用，当前显示 {date} 的内置快照。',
+    share:'分享', copied:'已复制 ✓',
+    calcTitle:'💵 月成本估算', calcIn:'每月输入 tokens', calcOut:'每月输出 tokens', calcFree:'免费',
   },
   en: {
     brand:'AI Rank · Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
@@ -392,6 +413,9 @@ const I18N = {
     eloTip:'LMArena Elo relative rating from blind votes; ±X is the 95% confidence interval — smaller is more reliable',
     faq5q:'Why does GPT-6 score below GPT-5.5?',
     faq5a:'Arena scores measure human preference in blind tests, not absolute capability. New models have few votes and still-converging Elo (visibly wider confidence intervals), so they are often temporarily underrated; answer style and length also sway votes. Scores usually stabilize toward true strength as votes accumulate.',
+    bannerSnap:'Live data unavailable — showing the built-in snapshot dated {date}.',
+    share:'Share', copied:'Copied ✓',
+    calcTitle:'💵 Monthly cost estimate', calcIn:'Input tokens / month', calcOut:'Output tokens / month', calcFree:'Free',
   }
 };
 
@@ -477,7 +501,7 @@ const store = {
 const state = {
   lang: null, sort: 'elo', q: '', vendors: new Set(), caps: new Set(),
   rows: [], src: {arena: 'snap', or: 'snap', md: 'snap'},
-  arenaPub: null, cmp: [], limit: 100, liveTried: false,
+  arenaPub: null, cmp: [], cmpRaw: null, dailyGen: null, limit: 100, liveTried: false,
 };
 
 /* ===== 快照 → 行 ===== */
@@ -659,7 +683,7 @@ function mergeLive(arena, orList, mdApi){
   for (const a of Object.values(arena)) if (a.pub && (!pub || a.pub > pub)) pub = a.pub;
   state.arenaPub = pub;
   state.rows = rows;
-  state.cmp = state.cmp.filter(k => rows.some(r => rowKey(r) === k));
+  resolveCmp();
 }
 
 async function loadOR(){
@@ -672,6 +696,36 @@ async function loadMD(){
   const res = await fetchTimeout('https://models.dev/api.json', 20000);
   if (!res.ok) throw new Error('md http ' + res.status);
   return await res.json();
+}
+
+/* ===== URL 状态 ===== */
+function parseUrlState(){
+  const u = new URL(location.href);
+  const sort = u.searchParams.get('sort');
+  if (['eloZ','value','price','ctx','new'].includes(sort)) state.sort = sort;
+  const q = u.searchParams.get('q');
+  if (q) state.q = q;
+  const v = u.searchParams.get('v');
+  if (v) state.vendors = new Set(v.split(',').filter(Boolean));
+  const c = u.searchParams.get('c');
+  if (c) state.caps = new Set(c.split(',').filter(Boolean));
+  const cmp = u.searchParams.get('cmp');
+  if (cmp) state.cmpRaw = cmp.split(',').filter(Boolean).slice(0, 4).map(decodeURIComponent);
+}
+function syncUrl(){
+  const u = new URL(location.href);
+  const set = (k, val) => { if (val) u.searchParams.set(k, val); else u.searchParams.delete(k); };
+  set('sort', state.sort !== 'elo' ? state.sort : '');
+  set('q', state.q.trim() || '');
+  set('v', [...state.vendors].join(','));
+  set('c', [...state.caps].join(','));
+  set('cmp', state.cmp.map(encodeURIComponent).join(','));
+  history.replaceState(null, '', u);
+}
+function resolveCmp(){
+  const keys = (state.cmpRaw && state.cmpRaw.length) ? state.cmpRaw : state.cmp;
+  const set = new Set(state.rows.map(rowKey));
+  state.cmp = keys.filter(k => set.has(k)).slice(0, 4);
 }
 
 /* ===== 排行/筛选 ===== */
@@ -750,7 +804,7 @@ function renderVendorChips(){
     el.className = 'chip' + (cur.has(v) ? ' on' : '');
     el.textContent = VENDOR_NAME[v] || v;
     el.dataset.vendor = v;
-    el.onclick = () => { cur.has(v) ? cur.delete(v) : cur.add(v); state.vendors = new Set(cur); renderVendorChips(); renderTable(); };
+    el.onclick = () => { cur.has(v) ? cur.delete(v) : cur.add(v); state.vendors = new Set(cur); renderVendorChips(); renderTable(); syncUrl(); };
     box.appendChild(el);
   }
 }
@@ -824,8 +878,10 @@ function toggleCmp(k){
     if (state.cmp.length >= 4){ flash(t2('cmpMax')); return; }
     state.cmp.push(k);
   }
+  state.cmpRaw = null;
   renderCmpBar();
   renderTable();
+  syncUrl();
 }
 function byKey(k){ return state.rows.find(r => rowKey(r) === k); }
 function renderCmpBar(){
@@ -876,6 +932,7 @@ function openCompare(){
     cmpRow(t2('fieldVotes'), rs.map(r => r.votes != null ? Number(r.votes).toLocaleString() : '—')),
   ];
   $('cmpbody').innerHTML = `<table class="ctable">${hdr}${rows.join('')}</table>`;
+  renderCalc();
   $('modal').classList.add('show');
 }
 
@@ -901,7 +958,7 @@ function applyLang(lang, persist){
     else u.searchParams.delete('lang');
     history.replaceState(null, '', u);
   }
-  renderVendorChips(); renderTable(); renderCmpBar(); renderGuide();
+  renderVendorChips(); renderTable(); renderCmpBar(); renderGuide(); applySnapshotMeta();
 }
 function initTheme(){
   const saved = store.get('airankTheme');
@@ -913,7 +970,14 @@ function applySnapshotMeta(){
   setBadge('st-or', state.src.or);
   setBadge('st-md', state.src.md);
   const allSnap = state.liveTried && Object.values(state.src).every(s => s === 'snap');
-  $('banner').classList.toggle('show', allSnap);
+  const b = $('banner');
+  if (allSnap){
+    const d = String(state.arenaPub || SNAPSHOT.gen || '').slice(0, 10);
+    b.textContent = t2('bannerSnap').replace('{date}', d);
+    b.classList.add('show');
+  } else {
+    b.classList.remove('show');
+  }
 }
 
 /* ===== 缓存与启动 ===== */
@@ -941,9 +1005,25 @@ function tryCache(){
     return true;
   } catch(e){ return false; }
 }
+async function loadDaily(){
+  const res = await fetchTimeout('data.json?t=' + Date.now(), 8000);
+  if (!res.ok) throw new Error('daily http ' + res.status);
+  const d = await res.json();
+  if (!d.rows || !d.rows.length) throw new Error('daily empty');
+  state.rows = d.rows.map(slimToRow);
+  state.arenaPub = d.arenaPub || d.gen || null;
+  state.dailyGen = d.gen || null;
+  state.src = {arena: 'cache', or: 'cache', md: 'cache'};
+}
 async function boot(){
-  applySnapshot(); applySnapshotMeta(); renderVendorChips(); renderTable();
-  tryCache();
+  applySnapshot(); resolveCmp(); applySnapshotMeta(); renderVendorChips(); renderTable(); renderCmpBar();
+  try {
+    await loadDaily();
+    resolveCmp(); applySnapshotMeta(); renderVendorChips(); renderTable(); renderCmpBar();
+  } catch(e){
+    tryCache();
+    resolveCmp(); renderCmpBar();
+  }
   const btn = $('btnRefresh');
   const run = async () => {
     btn.classList.add('spin');
@@ -958,7 +1038,7 @@ async function boot(){
       state.src.arena = a.status === 'fulfilled' ? 'live' : 'snap';
       state.src.or = o.status === 'fulfilled' ? 'live' : 'snap';
       state.src.md = m.status === 'fulfilled' ? 'live' : 'snap';
-      applySnapshotMeta(); renderVendorChips(); renderTable();
+      applySnapshotMeta(); renderVendorChips(); renderTable(); renderCmpBar();
       if (state.src.arena === 'live' && state.src.or === 'live') saveCache();
     }
     state.liveTried = true;
@@ -1014,6 +1094,7 @@ for (const tab of document.querySelectorAll('.tab')){
     state.sort = tab.dataset.sort;
     state.limit = 100;
     renderTable();
+    syncUrl();
   };
 }
 for (const chip of document.querySelectorAll('.chip.cap')){
@@ -1022,16 +1103,53 @@ for (const chip of document.querySelectorAll('.chip.cap')){
     if (state.caps.has(c)) state.caps.delete(c); else state.caps.add(c);
     chip.classList.toggle('on');
     renderTable();
+    syncUrl();
   };
 }
 $('q').addEventListener('input', e => {
   state.q = e.target.value;
   state.limit = 100;
   renderTable();
+  syncUrl();
 });
 $('btnMore').onclick = () => { state.limit = Infinity; renderTable(); };
 $('cmpgo').onclick = openCompare;
 $('modalClose').onclick = () => $('modal').classList.remove('show');
+$('cmpShare').onclick = async () => {
+  syncUrl();
+  const txt = location.href;
+  try { await navigator.clipboard.writeText(txt); }
+  catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(_){}
+    ta.remove();
+  }
+  const lbl = $('cmpShare').querySelector('span');
+  lbl.textContent = t2('copied');
+  setTimeout(() => lbl.textContent = t2('share'), 1500);
+};
+function fmtMoney(x){
+  if (x == null) return t2('cmpEmpty');
+  if (x === 0) return t2('calcFree');
+  const digits = x >= 100 ? 0 : x >= 1 ? 2 : 4;
+  return '$' + x.toLocaleString('en-US', {maximumFractionDigits: digits});
+}
+function renderCalc(){
+  const rs = state.cmp.map(byKey).filter(Boolean);
+  const tin = Math.max(0, Number($('calcIn').value) || 0);
+  const tout = Math.max(0, Number($('calcOut').value) || 0);
+  const costs = rs.map(r => (r.pin != null || r.pout != null)
+    ? (tin / 1e6) * (r.pin || 0) + (tout / 1e6) * (r.pout || 0) : null);
+  const max = Math.max(...costs.filter(c => c != null), 0.000001);
+  $('calcRows').innerHTML = rs.map((r, i) => {
+    const c = costs[i];
+    const w = c == null ? 0 : Math.max(2, Math.round(c / max * 100));
+    return `<div class="calc-row"><span>${esc(r.name)}</span><b class="num">${fmtMoney(c)}</b><span class="bar"><i style="width:${w}%"></i></span></div>`;
+  }).join('');
+}
+$('calcIn').addEventListener('input', renderCalc);
+$('calcOut').addEventListener('input', renderCalc);
 $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('show'); });
 /* ===== 排名说明：首次访问自动展开，手动收起后记住 ===== */
 function renderGuide(){
@@ -1046,10 +1164,14 @@ $('guideHead').onclick = () => {
 };
 $('guideHead').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('guideHead').onclick(); } };
 if (!store.get('airankGuideSeen')) $('guideBody').classList.add('open');
+parseUrlState();
+for (const el of document.querySelectorAll('.tab')) el.classList.toggle('on', el.dataset.sort === state.sort);
+$('q').value = state.q;
+for (const chip of document.querySelectorAll('.chip.cap')) chip.classList.toggle('on', state.caps.has(chip.dataset.cap));
 const explicitLang = langFromUrlOrStore();
 LANG = explicitLang || heuristicLang();
 applyLang(LANG, false);
-window.__airank = { state, renderTable, filtered, detectChinaIP };  // debug hook
+window.__airank = { state, renderTable, filtered, detectChinaIP, applySnapshotMeta };  // debug hook
 boot();
 // 无显式语言选择时按 IP 精判：中国大陆 → 中文，其他 → 英文（不写入 localStorage，每次访问重新判定）
 if (!explicitLang){
