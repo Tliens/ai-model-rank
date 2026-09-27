@@ -154,6 +154,48 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
   .hide-m{display:none}
   .srcbadges{display:none}
 }
+
+/* ===== AI 热榜资讯（并入自 ai-hot-board，全部 hb- 前缀隔离）===== */
+.hb{margin:34px 0 10px;border-top:1px solid var(--line);padding-top:26px}
+.hb-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hb-head h2{font-size:19px;margin:0;letter-spacing:.3px}
+.hb-status{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.hb-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.hb-dot.live{background:var(--good);box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 50%,transparent);animation:hbPing 1.8s infinite}
+.hb-dot.warn{background:var(--warn)}
+@keyframes hbPing{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hb-btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer;transition:border-color .15s}
+.hb-btn:hover{border-color:var(--accent)}
+.hb-btn[disabled]{opacity:.5;cursor:wait}
+.hb-sub{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.7}
+.hb-tabs{display:flex;gap:8px;margin:16px 0 12px;flex-wrap:wrap;align-items:center}
+.hb-tab{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer;transition:all .15s}
+.hb-tab b{font-weight:700;color:var(--fg);margin-left:4px;font-variant-numeric:tabular-nums}
+.hb-tab:hover{border-color:var(--accent);color:var(--fg)}
+.hb-tab.on{background:var(--accent);border-color:transparent;color:#fff}
+.hb-tab.on b{color:#fff}
+.hb-search{flex:1;min-width:150px;margin-left:auto}
+.hb-search input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--fg);font:inherit;font-size:13px;outline:none}
+.hb-search input:focus{border-color:var(--accent)}
+.hb-feed{list-style:none;margin:0;padding:0}
+.hb-row{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);background:var(--card);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s,transform .12s}
+.hb-row:hover{border-color:var(--accent);transform:translateX(3px)}
+.hb-row.flash{animation:hbFlash 2.2s ease-out}
+@keyframes hbFlash{0%{background:color-mix(in srgb,var(--accent) 22%,transparent)}100%{background:var(--card)}}
+.hb-rank{flex:none;width:24px;text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--muted);padding-top:2px}
+.hb-row .body{flex:1;min-width:0}
+.hb-row .t{display:block;text-decoration:none;color:var(--fg);font-size:14px;font-weight:600;line-height:1.45;word-break:break-word}
+.hb-row .t:hover{color:var(--accent)}
+.hb-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.hb-chip{font-size:11.5px;color:var(--muted);background:var(--chip);border-radius:6px;padding:2px 8px;white-space:nowrap}
+.hb-pill{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px}
+.hb-pill.money{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.hb-pill.models{color:#8b5cf6;background:rgba(139,92,246,.13)}
+.hb-pill.deals{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+.hb-pill.new{color:#fff;background:var(--bad)}
+.hb-stat{color:var(--accent)}
+.hb-empty{text-align:center;color:var(--muted);padding:36px 0;font-size:13.5px}
+.hb-more{display:block;margin:12px auto 4px}
 </style>
 </head>
 <body>
@@ -247,6 +289,25 @@ footer{margin:40px 0 30px;color:var(--muted);font-size:13px;border-top:1px solid
     </table>
   </div>
   <button class="more" id="btnMore" data-i18n="more" hidden>显示全部</button>
+
+  <section class="hb" id="hot" aria-label="AI hot news feed">
+    <div class="hb-head">
+      <h2>📡 <span data-i18n="hbTitle">AI 热榜资讯</span></h2>
+      <span class="hb-status"><span class="hb-dot" id="hbDot"></span><span id="hbStatus">…</span></span>
+      <button class="hb-btn" id="hbRefresh" data-i18n="hbRefresh">刷新</button>
+    </div>
+    <p class="hb-sub" data-i18n="hbSub">AI 搞钱 · 大模型 · 优惠福利实时资讯——聚合 Hacker News、GitHub、Hugging Face、dev.to 与 RSS 管道，每 5 分钟自动刷新，点击标题直达原文。</p>
+    <nav class="hb-tabs" id="hbTabs" aria-label="hotboard category">
+      <button class="hb-tab on" data-cat="all">🔥 <span data-i18n="hbAll">全部</span><b id="hbCntAll">0</b></button>
+      <button class="hb-tab" data-cat="money">💰 <span data-i18n="hbMoney">搞钱</span><b id="hbCntMoney">0</b></button>
+      <button class="hb-tab" data-cat="models">🧠 <span data-i18n="hbModels">大模型</span><b id="hbCntModels">0</b></button>
+      <button class="hb-tab" data-cat="deals">🎁 <span data-i18n="hbDeals">优惠</span><b id="hbCntDeals">0</b></button>
+      <span class="hb-search"><input id="hbQ" type="search" data-i18n-ph="hbSearchPh" placeholder="筛选标题…" aria-label="search hotboard"></span>
+    </nav>
+    <ol class="hb-feed" id="hbFeed"></ol>
+    <div class="hb-empty" id="hbEmpty" hidden data-i18n="hbEmpty">暂无内容 — 等待下次抓取。</div>
+    <button class="hb-btn hb-more" id="hbMore" hidden data-i18n="hbMore">加载更多</button>
+  </section>
 
   <section class="faq" id="faq">
     <h2 data-i18n="faqH">常见问题</h2>
@@ -364,6 +425,10 @@ const I18N = {
     bannerSnap:'实时数据暂时不可用，当前显示 {date} 的内置快照。',
     share:'分享', copied:'已复制 ✓',
     calcTitle:'💵 月成本估算', calcIn:'每月输入 tokens', calcOut:'每月输出 tokens', calcFree:'免费',
+    hbTitle:'AI 热榜资讯', hbRefresh:'刷新',
+    hbSub:'AI 搞钱 · 大模型 · 优惠福利实时资讯——聚合 Hacker News、GitHub、Hugging Face、dev.to 与 RSS 管道，每 5 分钟自动刷新，点击标题直达原文。',
+    hbAll:'全部', hbMoney:'搞钱', hbModels:'大模型', hbDeals:'优惠', hbSearchPh:'筛选标题…',
+    hbEmpty:'暂无内容 — 等待下次抓取。', hbMore:'加载更多',
   },
   en: {
     brand:'AI Rank · Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
@@ -417,6 +482,10 @@ const I18N = {
     bannerSnap:'Live data unavailable — showing the built-in snapshot dated {date}.',
     share:'Share', copied:'Copied ✓',
     calcTitle:'💵 Monthly cost estimate', calcIn:'Input tokens / month', calcOut:'Output tokens / month', calcFree:'Free',
+    hbTitle:'AI Hot Board', hbRefresh:'Refresh',
+    hbSub:'Live AI money-making news, model releases and deals — aggregated from Hacker News, GitHub, Hugging Face, dev.to and an RSS pipeline, auto-refreshed every 5 minutes. Click any headline to read the original.',
+    hbAll:'All', hbMoney:'Money', hbModels:'Models', hbDeals:'Deals', hbSearchPh:'Filter titles…',
+    hbEmpty:'Nothing here yet — waiting for the next fetch.', hbMore:'Load more',
   }
 };
 
@@ -1181,6 +1250,290 @@ if (!explicitLang){
     if (want !== LANG && !langFromUrlOrStore()) applyLang(want, false);
   });
 }
+
+/* ===== AI 热榜资讯（并入自 ai-hot-board；自包含 IIFE，DOM/存储均 hb 前缀隔离。
+   管道数据在 hotboard.json（scripts/update-hotboard.mjs 生成），分类关键词与该脚本保持同步。===== */
+(() => {
+  const POLL_MS = 5 * 60 * 1000, MAX_AGE_H = 72, PAGE = 30;
+  const el = (id) => document.getElementById(id);
+
+  const HB = {
+    zh: {
+      catMoney:'搞钱', catModels:'模型', catDeals:'优惠', newBadge:'新',
+      justNow:'刚刚', minAgo:'{n} 分钟前', hourAgo:'{n} 小时前', dayAgo:'{n} 天前',
+      sourcesWord:'个源', itemsWord:'条', updatedWord:'更新于', loading:'正在抓取实时源…',
+      offlineNote:'在线源不可达 — 显示缓存数据。',
+    },
+    en: {
+      catMoney:'Money', catModels:'Models', catDeals:'Deal', newBadge:'NEW',
+      justNow:'just now', minAgo:'{n}m ago', hourAgo:'{n}h ago', dayAgo:'{n}d ago',
+      sourcesWord:'sources', itemsWord:'items', updatedWord:'Updated', loading:'Fetching live sources…',
+      offlineNote:'Live sources unreachable — showing cached items.',
+    },
+  };
+  const lang = () => (document.documentElement.lang || 'zh-CN').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const tt = (k) => HB[lang()][k] ?? HB.zh[k] ?? k;
+
+  /* 分类关键词（与 scripts/update-hotboard.mjs 保持同步） */
+  const MONEY_KW = [
+    /\bfund(ed|ing|rais\w*)?\b/i, /\braise[ds]?\b/i, /\bseries [abc]\b/i, /\bseed (round|funding)\b/i,
+    /\bvalued at\b/i, /\bvaluation\b/i, /\bacqui(f|s)\w*/i, /\bmerger\b/i, /\bipo\b/i, /\brevenue\b/i,
+    /\barr\b/i, /\bmonet\w+/i, /\bprofitab\w+/i, /\bbillion\b/i, /\bventure\b/i, /\bstartup\b/i,
+    /\by combinator\b/i, /\bvc funding\b/i,
+    /融资/, /创投/, /创业/, /估值/, /收购/, /并购/, /上市/, /变现/, /搞钱/, /副业/, /月入/, /营收/, /商业化/, /赚钱/,
+  ];
+  const DEALS_KW = [
+    /\bfree (credits?|tier|trial|plan|access)\b/i, /\bcoupon\b/i, /\bpromo( code)?\b/i, /\bdiscount\b/i,
+    /(\d+)%\s*off/i, /\bgiveaway\b/i, /\bblack friday\b/i, /\bdeal(s)?\b/i,
+    /优惠/, /折扣/, /免费/, /白嫖/, /福利/, /额度/, /代金券/, /特价/, /立减/, /半价/,
+  ];
+  function classify(text, fallback) {
+    let money = 0, deals = 0, models = 0;
+    for (const re of MONEY_KW) if (re.test(text)) money++;
+    for (const re of DEALS_KW) if (re.test(text)) deals++;
+    for (const re of [
+      /\b(gpt-?\w+|chatgpt|claude|gemini|llama|qwen|deepseek|mistral|kimi|glm|grok|copilot|sora|midjourney)\b/i,
+      /\bllms?\b/i, /\blarge language model/i, /open[- ]?(source|weights)/i, /\bbenchmark\b/i,
+      /\bcontext window\b/i, /\bfine-?tun/i, /多模态/, /开源/, /模型/, /推理能力/, /文生图/, /文生视频/, /智能体/,
+      /\bai\b/i, /人工智能/,
+    ]) if (re.test(text)) models++;
+    deals *= 1.5;
+    const best = Math.max(money, deals, models);
+    if (best === 0) return fallback;
+    if (best === deals) return 'deals';
+    if (best === money) return 'money';
+    return 'models';
+  }
+
+  const store = {
+    get: (k, fb) => { try { const v = localStorage.getItem(k); return v == null ? fb : JSON.parse(v); } catch { return fb; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtK = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+  const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); };
+  const titleKey = (t) => String(t).toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '').slice(0, 80);
+  function ago(iso) {
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 90) return tt('justNow');
+    if (s < 3600) return tt('minAgo').replace('{n}', Math.round(s / 60));
+    if (s < 86400) return tt('hourAgo').replace('{n}', Math.round(s / 3600));
+    return tt('dayAgo').replace('{n}', Math.round(s / 86400));
+  }
+  async function fetchT(url, ms = 9000, opts = {}) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { cache: 'no-store', signal: ctrl.signal, ...opts }).finally(() => clearTimeout(t));
+  }
+
+  /* 实时源（CORS 公开 API）+ 管道 hotboard.json */
+  async function fetchHN() {
+    const base = 'https://hn.algolia.com/api/v1/search_by_date?tags=story';
+    const batches = [{ q: 'AI', n: 50, fb: 'models' }, { q: 'AI funding', n: 15, fb: 'money' }, { q: 'AI free', n: 15, fb: 'deals' }];
+    const res = await Promise.allSettled(batches.map((b) =>
+      fetchT(`${base}&query=${encodeURIComponent(b.q)}&hitsPerPage=${b.n}`).then((r) => r.json())));
+    const out = [];
+    res.forEach((r, i) => {
+      if (r.status !== 'fulfilled' || !Array.isArray(r.value?.hits)) return;
+      for (const h of r.value.hits) {
+        const title = h.title || h.story_title;
+        if (!title || (Date.now() - new Date(h.created_at)) / 36e5 > 48) continue;
+        out.push({ id: 'hn' + h.objectID, t: title, u: h.url || h.story_url || `https://news.ycombinator.com/item?id=${h.objectID}`, s: 'Hacker News', c: classify(title, batches[i].fb), d: h.created_at, g: 'e', p: h.points || 0 });
+      }
+    });
+    if (!out.length) throw new Error('hn empty');
+    return out;
+  }
+  async function fetchDevTo() {
+    const r = await fetchT('https://dev.to/api/articles?tag=ai&per_page=25');
+    const arr = await r.json();
+    const out = arr.filter((a) => (Date.now() - new Date(a.published_at)) / 36e5 <= MAX_AGE_H).map((a) => ({
+      id: 'dt' + a.id, t: a.title, u: a.url, s: 'dev.to', c: classify(a.title + ' ' + (a.description || ''), 'models'), d: a.published_at, g: 'e', p: a.positive_reactions_count || 0,
+    }));
+    if (!out.length) throw new Error('devto empty');
+    return out;
+  }
+  async function fetchGitHub() {
+    const since = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+    const r = await fetchT(`https://api.github.com/search/repositories?q=topic:llm+created:%3E${since}&sort=stars&order=desc&per_page=20`, 9000, { headers: { Accept: 'application/vnd.github+json' } });
+    const j = await r.json();
+    const out = (j.items || []).map((x) => ({ id: 'gh' + x.id, t: x.full_name + (x.description ? ' — ' + x.description : ''), u: x.html_url, s: 'GitHub', c: 'models', d: x.created_at, g: 'e', st: x.stargazers_count || 0 }));
+    if (!out.length) throw new Error('github empty');
+    return out;
+  }
+  async function fetchHF() {
+    const r = await fetchT('https://huggingface.co/api/models?sort=lastModified&direction=-1&limit=100');
+    const arr = await r.json();
+    const seen = new Set(); const out = [];
+    for (const m of arr) {
+      if (!m.id || (Date.now() - new Date(m.createdAt)) / 864e5 > 7) continue;
+      if (/gguf|awq|gptq|bnb|onnx|coreml/i.test(m.id)) continue;
+      if ((m.downloads || 0) < 100 && (m.likes || 0) < 5) continue;
+      const name = m.id.split('/').pop().toLowerCase();
+      if (seen.has(name)) continue;
+      seen.add(name);
+      out.push({ id: 'hf' + hash(m.id), t: m.id, u: `https://huggingface.co/${m.id}`, s: 'Hugging Face', c: 'models', d: m.createdAt, g: 'e', dn: m.downloads || 0 });
+    }
+    if (!out.length) throw new Error('hf empty');
+    return out.slice(0, 15);
+  }
+  async function fetchPipeline() {
+    const r = await fetchT(`hotboard.json?t=${Date.now()}`, 8000);
+    const j = await r.json();
+    const out = (j.items || []).filter((x) => (Date.now() - new Date(x.d)) / 36e5 <= MAX_AGE_H)
+      .map((x) => ({ id: 'p' + x.i, t: x.t, u: x.u, s: x.s, c: x.c, d: x.d, g: x.g || 'e', p: x.p, st: x.st }));
+    if (!out.length) throw new Error('pipeline empty');
+    return out;
+  }
+  const SOURCES = [
+    { run: fetchPipeline }, { run: fetchHN }, { run: fetchGitHub }, { run: fetchHF }, { run: fetchDevTo },
+  ];
+
+  const state = { items: [], seen: new Map(), cat: 'all', q: '', rendered: PAGE, freshIds: new Set(), busy: false, ds: '', lastUp: null, okCount: 0 };
+
+  function ingest(lists) {
+    const byId = new Map(state.items.map((x) => [x.id, x]));
+    const seenTitles = new Set(state.items.map((x) => titleKey(x.t)));
+    for (const list of lists) {
+      if (list.status !== 'fulfilled' || !Array.isArray(list.value)) continue;
+      for (const it of list.value) {
+        if (!it || !it.u || !it.t) continue;
+        const tk = titleKey(it.t);
+        const id = it.id || 'x' + hash(tk);
+        if (byId.has(id) || seenTitles.has(tk)) continue;
+        seenTitles.add(tk); byId.set(id, it);
+      }
+    }
+    state.items = [...byId.values()].sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 400);
+  }
+
+  const CAT_PILL = { money: 'catMoney', models: 'catModels', deals: 'catDeals' };
+  const CAT_EMOJI = { money: '💰', models: '🧠', deals: '🎁' };
+  function renderCounts() {
+    const n = { All: state.items.length, Money: 0, Models: 0, Deals: 0 };
+    const k = { All: 'all', Money: 'money', Models: 'models', Deals: 'deals' };
+    for (const it of state.items) if (['money', 'models', 'deals'].includes(it.c)) n[{ money: 'Money', models: 'Models', deals: 'Deals' }[it.c]]++;
+    el('hbCntAll').textContent = n.All; el('hbCntMoney').textContent = n.Money;
+    el('hbCntModels').textContent = n.Models; el('hbCntDeals').textContent = n.Deals;
+  }
+  function filtered() {
+    const q = state.q.toLowerCase();
+    return state.items.filter((it) =>
+      (state.cat === 'all' || it.c === state.cat) && (!q || (it.t + ' ' + it.s).toLowerCase().includes(q)));
+  }
+  function renderFeed() {
+    const list = filtered();
+    el('hbFeed').innerHTML = list.slice(0, state.rendered).map((it, i) => {
+      const stats = [
+        it.p ? `<span class="hb-chip hb-stat">▲ ${fmtK(it.p)}</span>` : '',
+        it.st ? `<span class="hb-chip hb-stat">★ ${fmtK(it.st)}</span>` : '',
+        it.dn ? `<span class="hb-chip hb-stat">⬇ ${fmtK(it.dn)}</span>` : '',
+      ].join('');
+      const newPill = state.freshIds.has(it.id) ? `<span class="hb-pill new">${esc(tt('newBadge'))}</span>` : '';
+      const zhChip = it.g === 'z' ? '<span class="hb-chip">中</span>' : '';
+      return `<li class="hb-row${state.freshIds.has(it.id) ? ' flash' : ''}">
+        <span class="hb-rank">${i + 1}</span>
+        <div class="body">
+          <a class="t" href="${esc(it.u)}" target="_blank" rel="noopener">${esc(it.t)}</a>
+          <div class="hb-meta">
+            <span class="hb-pill ${it.c}">${CAT_EMOJI[it.c] || ''} ${esc(tt(CAT_PILL[it.c] || ''))}</span>
+            <span class="hb-chip">${esc(it.s)}</span>${zhChip}
+            <span class="hb-chip">${ago(it.d)}</span>${stats}${newPill}
+          </div>
+        </div></li>`;
+    }).join('');
+    el('hbEmpty').hidden = list.length > 0;
+    el('hbMore').hidden = list.length <= state.rendered;
+  }
+  function renderStatus(okCount) {
+    state.okCount = okCount;
+    el('hbDot').className = 'hb-dot ' + (state.ds === 'live' ? 'live' : state.ds ? 'warn' : '');
+    const hhmm = state.lastUp ? state.lastUp.toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
+    let text;
+    if (state.busy && !state.lastUp) text = tt('loading');
+    else {
+      text = `${okCount} ${tt('sourcesWord')} · ${state.items.length} ${tt('itemsWord')} · ${tt('updatedWord')} ${hhmm}`;
+      if (state.lastUp && state.ds !== 'live') text += ' · ' + tt('offlineNote');
+    }
+    el('hbStatus').textContent = text;
+  }
+
+  async function poll() {
+    if (state.busy) return;
+    state.busy = true;
+    el('hbRefresh').disabled = true;
+    const results = await Promise.allSettled(SOURCES.map((s) => s.run()));
+    const okCount = results.filter((r) => r.status === 'fulfilled').length;
+
+    // 新条目标记：本轮首次出现的 id 记入 seen，36h 内的打 new
+    const fresh = [];
+    for (const list of results) {
+      if (list.status !== 'fulfilled' || !Array.isArray(list.value)) continue;
+      for (const it of list.value) {
+        if (!it || state.seen.has(it.id)) continue;
+        state.seen.set(it.id, Date.now());
+        if ((Date.now() - new Date(it.d).getTime()) / 36e5 < 36) fresh.push(it.id);
+      }
+    }
+    if (state.seen.size > 3000) state.seen = new Map([...state.seen].sort((a, b) => a[1] - b[1]).slice(-2000));
+    store.set('airank_hb_seen', Object.fromEntries(state.seen));
+
+    ingest(results);
+    state.lastUp = new Date();
+    state.ds = okCount > 0 ? 'live' : (loadCache() ? 'cached' : '');
+    state.rendered = PAGE;
+    state.freshIds = new Set(fresh);
+    renderStatus(okCount); renderCounts(); renderFeed();
+    if (okCount > 0) store.set('airank_hb_cache', { at: Date.now(), items: state.items.slice(0, 120) });
+    state.busy = false;
+    el('hbRefresh').disabled = false;
+    scheduleNext();
+  }
+  function loadCache() {
+    const cached = store.get('airank_hb_cache', null);
+    if (!cached?.items?.length) return false;
+    state.items = cached.items.map((x) => ({ ...x }));
+    return true;
+  }
+  let timer = null;
+  function scheduleNext() {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (!document.hidden) poll(); else scheduleNext(); }, POLL_MS);
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && timer) poll(); });
+
+  el('hbTabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.hb-tab');
+    if (!btn) return;
+    state.cat = btn.dataset.cat;
+    document.querySelectorAll('.hb-tab').forEach((b) => b.classList.toggle('on', b === btn));
+    state.rendered = PAGE;
+    renderFeed();
+  });
+  let qTimer;
+  el('hbQ').addEventListener('input', (e) => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value.trim(); state.rendered = PAGE; renderFeed(); }, 180);
+  });
+  el('hbMore').addEventListener('click', () => { state.rendered += PAGE; renderFeed(); });
+  el('hbRefresh').addEventListener('click', () => poll());
+  el('hbFeed').addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    const row = e.target.closest('.hb-row');
+    const a = row?.querySelector('a.t');
+    if (a) window.open(a.href, '_blank', 'noopener');
+  });
+
+  /* 语言跟随主页面：监听 <html lang> 变化后重渲染动态文案 */
+  new MutationObserver(() => { renderStatus(state.okCount); renderCounts(); renderFeed(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  /* boot：先用缓存渲染，再拉实时 */
+  for (const [k, v] of Object.entries(store.get('airank_hb_seen', {}))) state.seen.set(k, v);
+  loadCache();
+  renderCounts(); renderFeed(); renderStatus(0);
+  poll();
+})();
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script><!-- End Cloudflare Web Analytics --></body>
 </html>
