@@ -2,7 +2,7 @@
 
 实时 AI 大模型对比与排行网站：LMArena 人类偏好评分 + OpenRouter/models.dev 实时价格与上下文，多维排行（智能 / 中文 / 性价比 / 低价 / 长上下文 / 最新），支持模型对比、中英双语、明暗主题。
 
-**线上地址**: https://tliens.github.io/ai-model-rank/
+**线上地址**: https://ai-model-rank.kuige.me/
 
 ## 特性
 - 📊 六维排行：Arena 智能榜、中文榜、性价比、低价、长上下文、最新发布

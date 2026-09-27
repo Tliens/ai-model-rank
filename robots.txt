@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tliens.github.io/ai-model-rank/sitemap.xml
+Sitemap: https://ai-model-rank.kuige.me/sitemap.xml
