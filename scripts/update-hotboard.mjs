@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// AI Hot Board 数据管道（GitHub Actions 每 5 分钟运行：node scripts/update-data.mjs）
+// AI Hot Board 数据管道（GitHub Actions 每 5 分钟运行：node scripts/update-hotboard.mjs，workflow=update-hotboard.yml）
 // 拉取 RSS / News 源 → 解析归一 → 按 AI 关键词过滤 + 分类 → 写 hotboard.json（AI Rank 页面热榜区块读取；脚本从原 ai-hot-board 仓库并入）
 // 注意：分类关键词规则需与 index.html 内联脚本保持同步（页面端也有一份用于在线 API 条目分类）。
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
 const MAX_AGE_H = 48;          // 只保留 48h 内条目
@@ -149,6 +149,11 @@ async function main() {
   const items = [...byKey.values()]
     .sort((a, b) => b.d.localeCompare(a.d))
     .slice(0, MAX_ITEMS);
+  // 质量门：成功源太少（如 Actions 网络抽风）时保留现有文件，防止坏数据覆盖好数据
+  if (items.length < 30 && existsSync(new URL('../hotboard.json', import.meta.url))) {
+    console.error(`only ${items.length} items from ${ok.length} feeds — keep existing hotboard.json`);
+    return;
+  }
   const data = { updated: new Date().toISOString(), items };
   writeFileSync(new URL('../hotboard.json', import.meta.url), JSON.stringify(data));
   console.log(`hotboard.json: ${items.length} items`);
