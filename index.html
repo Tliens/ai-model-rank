@@ -18,7 +18,8 @@
 <meta name="twitter:title" content="AI 大模型排行榜 - AI Rank">
 <meta name="twitter:description" content="实时 AI 大模型排行：Arena 评分、价格、上下文窗口多维对比。">
 <meta name="twitter:image" content="https://ai-model-rank.kuige.me/og-image.png">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"AI Rank 大模型排行榜","url":"https://ai-model-rank.kuige.me/","applicationCategory":"ReferenceApplication","operatingSystem":"Web","description":"实时 AI 大模型排行榜：LMArena 评分、API 价格、上下文窗口多维对比","offers":{"@type":"Offer","price":"0"},"inLanguage":["zh-CN","en"]}
 </script>
@@ -230,23 +231,48 @@ button.hb-pill:hover{filter:brightness(1.2);text-decoration:underline}
   .hb-segbtn{padding:6px 10px;font-size:12px}
   .hb-newbar{font-size:12.5px;padding:8px 11px}
 }
+/* ── KuiGe 站群统一基座 ───────────────────── */
+:root{--kg-ink:#1f2430;--kg-sub:#6b7280;--kg-accent:#f2603c;--kg-line:#e8e6e1;--kg-bg:#faf9f7}
+.kg-top{position:sticky;top:0;z-index:60;background:rgba(250,249,247,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--kg-line)}
+.kg-top-in{max-width:1120px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.kg-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--kg-ink);font-weight:700;font-size:17px}
+.kg-brand img{width:32px;height:32px;border-radius:9px;display:block}
+.kg-brand small{font-weight:500;color:var(--kg-sub);font-size:12px}
+.kg-nav{display:flex;align-items:center;gap:14px;font-size:14px}
+.kg-nav a{color:var(--kg-sub);text-decoration:none}
+.kg-nav a:hover{color:var(--kg-ink)}
+.kg-entry{background:var(--kg-ink);color:#fff!important;padding:6px 14px;border-radius:999px;text-decoration:none;font-size:13px}
+.kg-entry:hover{background:var(--kg-accent)}
+.kg-foot{background:var(--kg-bg);border-top:1px solid var(--kg-line);color:var(--kg-sub);font-size:13px;margin-top:0}
+.kg-foot-in{max-width:1120px;margin:0 auto;padding:36px 20px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.kg-foot img{width:44px;height:44px;border-radius:12px;margin-bottom:2px}
+.kg-foot-brand{color:var(--kg-ink);font-weight:700;font-size:15px;margin:0}
+.kg-foot-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px}
+.kg-foot-links a{color:var(--kg-sub);text-decoration:none}
+.kg-foot-links a:hover{color:var(--kg-accent)}
+.kg-foot-copy{margin:4px 0 0;color:#9ca3af;font-size:12px}
+@media(max-width:640px){.kg-nav a:not(.kg-entry){display:none}}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="wrap top-in">
-    <span class="brand"><span class="logo">⚡</span><span data-i18n="brand">AI Rank · 大模型排行榜</span></span>
-    <span class="spacer"></span>
-    <span class="srcbadges">
-      <span class="badge snap" id="st-arena"><span class="dot"></span><span data-i18n="srcArena">Arena 评分</span></span>
-      <span class="badge snap" id="st-or"><span class="dot"></span><span data-i18n="srcPrice">价格</span></span>
-      <span class="badge snap" id="st-md"><span class="dot"></span><span data-i18n="srcLib">模型库</span></span>
-    </span>
-    <a class="iconbtn kuige-entry" href="https://kuige.me/" target="_blank" rel="noopener" title="kuige.me" style="text-decoration:none"><img src="https://kuige.me/logo.png" alt="" width="16" height="16" style="width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px">魁歌</a>
-<button class="iconbtn" id="btnRefresh" data-i18n-title="refresh" title="刷新数据">↻</button>
-    <button class="iconbtn" id="btnLang">EN</button>
-    <button class="iconbtn" id="btnTheme" title="Theme">◐</button>
-    <a class="iconbtn" href="https://x.com/kuige_me" target="_blank" rel="noopener" title="关注我的 X (Twitter)" aria-label="X (Twitter)" style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<header class="kg-top">
+  <div class="kg-top-in">
+    <a class="kg-brand" href="./">
+      <img src="favicon.png?v=2" alt="AI Rank 吉祥物">
+      <span>AI Rank<small data-i18n="brandSub">大模型排行榜</small></span>
+    </a>
+    <nav class="kg-nav">
+      <span class="srcbadges">
+        <span class="badge snap" id="st-arena"><span class="dot"></span><span data-i18n="srcArena">Arena 评分</span></span>
+        <span class="badge snap" id="st-or"><span class="dot"></span><span data-i18n="srcPrice">价格</span></span>
+        <span class="badge snap" id="st-md"><span class="dot"></span><span data-i18n="srcLib">模型库</span></span>
+      </span>
+      <button class="iconbtn" id="btnRefresh" data-i18n-title="refresh" title="刷新数据">↻</button>
+      <button class="iconbtn" id="btnLang">EN</button>
+      <button class="iconbtn" id="btnTheme" title="Theme">◐</button>
+      <a class="iconbtn" href="https://x.com/kuige_me" target="_blank" rel="noopener" title="关注我的 X (Twitter)" aria-label="X (Twitter)" style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      <a class="kg-entry" href="https://kuige.me/" target="_blank" rel="noopener">魁歌 · 全部作品</a>
+    </nav>
   </div>
 </header>
 
@@ -373,9 +399,25 @@ button.hb-pill:hover{filter:brightness(1.2);text-decoration:underline}
     </details>
   </section>
 
-  <footer>
-    <div data-i18n="footSrc">数据来源：LMArena 公开数据集（评分）· OpenRouter（价格 / 上下文）· models.dev（模型库）。评分与价格仅供参考，请以各厂商官方页面为准。</div>
-    <div style="margin-top:6px"><span data-i18n="footTip">提示：点击表格行可加入对比（最多 4 个），点击上方标签切换排行维度。</span> · <a href="https://lmarena.ai" target="_blank" rel="noopener">LMArena</a> · <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> · <a href="https://models.dev" target="_blank" rel="noopener">models.dev</a> · <a href="https://x.com/kuige_me" target="_blank" rel="noopener">X (Twitter)</a></div>
+  <footer class="kg-foot">
+    <div class="kg-foot-in">
+      <img src="favicon.png?v=2" alt="AI Rank 吉祥物">
+      <p class="kg-foot-brand">AI Rank</p>
+      <nav class="kg-foot-links">
+        <a href="https://kuige.me/" target="_blank" rel="noopener">魁歌主页</a>
+        <a href="https://icongems.kuige.me/" target="_blank" rel="noopener">IconGems</a>
+        <a href="https://tokenlens.kuige.me/" target="_blank" rel="noopener">TokenLens 词元工坊</a>
+        <a href="https://jsonlens.kuige.me/" target="_blank" rel="noopener">JSON Lens</a>
+        <a href="https://sse-inspector.kuige.me/" target="_blank" rel="noopener">SSE Inspector</a>
+        <a href="https://lmarena.ai" target="_blank" rel="noopener">LMArena</a>
+        <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a>
+        <a href="https://models.dev" target="_blank" rel="noopener">models.dev</a>
+        <a href="https://x.com/kuige_me" target="_blank" rel="noopener">X (Twitter)</a>
+      </nav>
+      <div data-i18n="footSrc" style="max-width:720px">数据来源：LMArena 公开数据集（评分）· OpenRouter（价格 / 上下文）· models.dev（模型库）。评分与价格仅供参考，请以各厂商官方页面为准。</div>
+      <div style="max-width:720px"><span data-i18n="footTip">提示：点击表格行可加入对比（最多 4 个），点击上方标签切换排行维度。</span></div>
+      <p class="kg-foot-copy">© 2026 魁歌 KuiGe · 用 AI 构建 · <a href="https://kuige.me/" style="color:inherit">kuige.me</a></p>
+    </div>
   </footer>
 </main>
 
@@ -414,7 +456,7 @@ const SNAPSHOT = {"gen":"2026-09-14","arenaPub":"2026-09-13","rows":[{"name":"Cl
 /* ===== i18n ===== */
 const I18N = {
   zh: {
-    brand:'AI Rank · 大模型排行榜', srcArena:'Arena 评分', srcPrice:'价格', srcLib:'模型库',
+    brandSub:'大模型排行榜', srcArena:'Arena 评分', srcPrice:'价格', srcLib:'模型库',
     h1:'AI 大模型排行榜',
     sub:'实时追踪 LMArena 人类偏好评分，多维对比主流大模型的智能水平、API 价格、上下文窗口与多模态能力——打开页面即拉取最新数据，无需登录、完全免费。',
     statModels:'个模型', statVendors:'家厂商', statUpdated:'榜单日期',
@@ -472,7 +514,7 @@ const I18N = {
     hbSortHot:'热门', hbSortNew:'最新',
   },
   en: {
-    brand:'AI Rank · Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
+    brandSub:'Model Leaderboard', srcArena:'Arena score', srcPrice:'Pricing', srcLib:'Catalog',
     h1:'AI Model Leaderboard',
     sub:'Live LMArena human-preference Elo scores, side-by-side with API pricing, context window and multimodal capabilities of leading AI models. Fresh data on every page load — free, no sign-up.',
     statModels:'models', statVendors:'vendors', statUpdated:'Leaderboard date',
