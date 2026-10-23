@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-/* 每日数据管道：LMArena 官方数据集 + OpenRouter + models.dev → 合并 → data.json
+/* 每日数据管道：LMArena 官方数据集（parquet 直下）+ OpenRouter + models.dev → 合并 → data.json
  * ⚠️ 归一化/厂商映射/变体规则需与 index.html 内联脚本保持同步（改这里必须同步改页面）。
- * 任一数据源拉取失败即非零退出，保留上一天的 data.json（workflow 只在脚本成功后提交）。 */
+ * 任一核心数据源拉取失败即非零退出，保留上一天的 data.json（workflow 只在脚本成功后提交）。
+ * 榜单来源（lmarena-ai/leaderboard-dataset 各 config 的 latest split）：
+ *   text   → overall(智能) chinese(中文) coding(代码) math(数学) creative_writing(创意写作)
+ *   webdev → overall(WebDev)   vision → overall(视觉)   agent → overall(智能体, score 制) */
 import fs from 'node:fs';
+import { parquetRead } from 'hyparquet';
 
 const VENDOR_ALIAS = {
   openai:'openai', anthropic:'anthropic', google:'google', deepseek:'deepseek',
@@ -21,6 +25,18 @@ const FIRST_PARTY = ['openai','anthropic','google','xai','deepseek','zhipuai','m
   'perplexity','microsoft','baidu','tencent','bytedance','thinky'];
 const BAD_ID = /image|imagine|tts|whisper|embed|video|-asr|transcribe|omni-human/i;
 
+// 榜单 key 与 data.json 字段后缀对应：eloO=elo/rankO（沿用旧字段名），其余 eloC/rankC 等
+const BOARDS = [
+  { key: 'O', conf: 'text',   cat: 'overall',          sc: 'rating', must: true },
+  { key: 'Z', conf: 'text',   cat: 'chinese',          sc: 'rating', must: true },
+  { key: 'C', conf: 'text',   cat: 'coding',           sc: 'rating', must: true },
+  { key: 'M', conf: 'text',   cat: 'math',             sc: 'rating' },
+  { key: 'W', conf: 'text',   cat: 'creative_writing', sc: 'rating' },
+  { key: 'D', conf: 'webdev', cat: 'overall',          sc: 'rating' },
+  { key: 'V', conf: 'vision', cat: 'overall',          sc: 'rating' },
+  { key: 'A', conf: 'agent',  cat: 'overall',          sc: 'score'   },
+];
+
 function norm(s){
   return String(s).toLowerCase()
     .replace(/\s*\([^)]*\)/g, '')
@@ -33,6 +49,7 @@ function norm(s){
     .replace(/^-+|-+$/g, '') || s;
 }
 const priceOk = x => x != null && x >= 0;
+const num = x => typeof x === 'bigint' ? Number(x) : x;
 
 async function j(url, ms = 25000, tries = 4){
   for (let i = 0; i < tries; i++){
@@ -47,22 +64,56 @@ async function j(url, ms = 25000, tries = 4){
   }
 }
 
-async function fetchArena(){
-  const out = {};
-  for (let off = 0; off < 700; off += 100){
-    const url = 'https://datasets-server.huggingface.co/rows?dataset=lmarena-ai%2Fleaderboard-dataset'
-      + `&config=text&split=latest&offset=${off}&length=100`;
-    const d = await j(url);
-    if (d.error) throw new Error('arena: ' + d.error);
-    for (const r of (d.rows || [])){
-      const row = r.row;
-      if (row.category !== 'overall' && row.category !== 'chinese') continue;
-      const a = out[row.model_name] || (out[row.model_name] = {
-        org: row.organization, votes: row.vote_count, pub: row.leaderboard_publish_date, cats: {}
-      });
-      a.cats[row.category] = {rank: row.rank, rating: row.rating,
-        lo: row.rating_lower, hi: row.rating_upper};
+/* LMArena 官方数据集 latest 分片 parquet 直下（整榜一次拿全，替代旧行式分页接口）。
+ * 主源 huggingface.co（CI 可达），备源 hf-mirror.com（中国大陆本地可达）。 */
+async function fetchParquet(conf){
+  const urls = [
+    `https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/resolve/main/${conf}/latest-00000-of-00001.parquet`,
+    `https://hf-mirror.com/datasets/lmarena-ai/leaderboard-dataset/resolve/main/${conf}/latest-00000-of-00001.parquet`,
+  ];
+  let lastErr;
+  for (const url of urls){
+    for (let i = 0; i < 3; i++){
+      try {
+        const res = await fetch(url, {signal: AbortSignal.timeout(60000)});
+        if (!res.ok) throw new Error('http ' + res.status);
+        const buf = Buffer.from(await res.arrayBuffer());
+        const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+        let rows;
+        await parquetRead({ file: ab, rowFormat: 'object', onComplete: r => { rows = r; } });
+        if (!rows || !rows.length) throw new Error('empty parquet');
+        return rows;
+      } catch (e){
+        lastErr = e;
+        await new Promise(r => setTimeout(r, 2000 * (i + 1)));
+      }
     }
+  }
+  throw lastErr;
+}
+
+async function fetchBoards(){
+  const cache = {};
+  const out = {};
+  for (const b of BOARDS){
+    const rows = cache[b.conf] || (cache[b.conf] = await fetchParquet(b.conf));
+    let matched = 0;
+    for (const r of rows){
+      if (r.category !== b.cat) continue;
+      matched++;
+      const a = out[r.model_name] || (out[r.model_name] = {
+        org: r.organization, votes: null, pub: r.leaderboard_publish_date, cats: {}
+      });
+      if (b.key === 'O') a.votes = num(r.vote_count);
+      const loKey = b.sc === 'rating' ? 'rating_lower' : 'score_ci_lower';
+      const hiKey = b.sc === 'rating' ? 'rating_upper' : 'score_ci_upper';
+      a.cats[b.key] = { rank: num(r.rank), rating: num(r[b.sc]),
+        lo: num(r[loKey]), hi: num(r[hiKey]) };
+      const pub = r.leaderboard_publish_date;
+      if (pub && (!a.pub || pub > a.pub)) a.pub = pub;
+    }
+    console.log(`board ${b.conf}/${b.cat} (${b.sc}): ${matched} models`);
+    if (b.must && !matched) throw new Error(`arena: ${b.conf}/${b.cat} empty`);
   }
   if (!Object.keys(out).length) throw new Error('arena: empty');
   return out;
@@ -172,13 +223,21 @@ function buildRows(arena, orList, mdApi){
       }
       if (best) e = catalog[best];
     }
-    const ov = a.cats.overall || {}, zh = a.cats.chinese || {};
+    const c = k => a.cats[k] || {};
+    const [ov, zh, co, mt, cw, wd, vs, ag] =
+      ['O','Z','C','M','W','D','V','A'].map(c);
     let row;
     if (e){
       used.add(e);
       row = {name: e.name, vendor: e.vendor === 'other' ? org : e.vendor,
         arenaName: name, elo: ov.rating ?? null, eloLo: ov.lo ?? null, eloHi: ov.hi ?? null,
         rankO: ov.rank ?? null, eloZ: zh.rating ?? null, rankZ: zh.rank ?? null,
+        eloC: co.rating ?? null, rankC: co.rank ?? null,
+        eloM: mt.rating ?? null, rankM: mt.rank ?? null,
+        eloW: cw.rating ?? null, rankW: cw.rank ?? null,
+        eloD: wd.rating ?? null, rankD: wd.rank ?? null,
+        eloV: vs.rating ?? null, rankV: vs.rank ?? null,
+        eloA: ag.rating ?? null, rankA: ag.rank ?? null,
         votes: a.votes ?? null, effort: EFF.test(name),
         pin: e.pin, pout: e.pout, ctx: e.ctx, mout: e.mout,
         vision: e.vision, audio: e.audio, reason: e.reason, tools: e.tools,
@@ -187,9 +246,15 @@ function buildRows(arena, orList, mdApi){
       const disp = name.replace(/\s*\([^)]*\)/g, '').replace(/[-_]/g, ' ')
         .split(/\s+/).filter(Boolean)
         .map(w => /^[a-z]\d[\d.]*$/.test(w) ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)).join(' ');
-      row = {name: disp, vendor: org, arenaName: name,
-        elo: ov.rating ?? null, eloLo: ov.lo ?? null, eloHi: ov.hi ?? null,
+      row = {name: disp, vendor: org, arenaName: name, elo: ov.rating ?? null,
+        eloLo: ov.lo ?? null, eloHi: ov.hi ?? null,
         rankO: ov.rank ?? null, eloZ: zh.rating ?? null, rankZ: zh.rank ?? null,
+        eloC: co.rating ?? null, rankC: co.rank ?? null,
+        eloM: mt.rating ?? null, rankM: mt.rank ?? null,
+        eloW: cw.rating ?? null, rankW: cw.rank ?? null,
+        eloD: wd.rating ?? null, rankD: wd.rank ?? null,
+        eloV: vs.rating ?? null, rankV: vs.rank ?? null,
+        eloA: ag.rating ?? null, rankA: ag.rank ?? null,
         votes: a.votes ?? null, effort: EFF.test(name),
         pin: null, pout: null, ctx: null, mout: null,
         vision: false, audio: false, reason: false, tools: false, ow: false, free: false,
@@ -201,6 +266,8 @@ function buildRows(arena, orList, mdApi){
     if (used.has(e)) continue;
     rows.push({name: e.name, vendor: e.vendor, arenaName: null,
       elo: null, eloLo: null, eloHi: null, rankO: null, eloZ: null, rankZ: null,
+      eloC: null, rankC: null, eloM: null, rankM: null, eloW: null, rankW: null,
+      eloD: null, rankD: null, eloV: null, rankV: null, eloA: null, rankA: null,
       votes: null, effort: false, pin: e.pin, pout: e.pout, ctx: e.ctx, mout: e.mout,
       vision: e.vision, audio: e.audio, reason: e.reason, tools: e.tools,
       ow: e.ow, free: e.free, created: e.created, rel: e.rel});
@@ -211,8 +278,8 @@ function buildRows(arena, orList, mdApi){
 }
 
 (async () => {
-  console.log('fetching arena...');
-  const arena = await fetchArena();
+  console.log('fetching arena boards (parquet)...');
+  const arena = await fetchBoards();
   console.log('arena models:', Object.keys(arena).length);
   const [orList, mdApi] = await Promise.all([
     j('https://openrouter.ai/api/v1/models'),
@@ -221,6 +288,7 @@ function buildRows(arena, orList, mdApi){
   console.log('openrouter models:', (orList.data || []).length);
   const {rows, pub} = buildRows(arena, orList.data, mdApi);
   const KEYS = ['name','vendor','arenaName','elo','eloLo','eloHi','rankO','eloZ','rankZ',
+    'eloC','rankC','eloM','rankM','eloW','rankW','eloD','rankD','eloV','rankV','eloA','rankA',
     'votes','effort','pin','pout','ctx','mout','vision','audio','reason','tools','ow',
     'free','created','rel'];
   const slim = rows.map(r => {

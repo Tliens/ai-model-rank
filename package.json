@@ -1,0 +1,12 @@
+{
+  "name": "ai-model-rank",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "update-data": "node scripts/update-data.mjs",
+    "update-hotboard": "node scripts/update-hotboard.mjs"
+  },
+  "dependencies": {
+    "hyparquet": "^1.31.5"
+  }
+}
